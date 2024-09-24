@@ -1,0 +1,195 @@
+# auth.txt - Enhanced Authentication System Specification
+
+## Overview
+Implement a robust authentication system using FastAPI for the backend. This system will handle user registration, login, password reset, token-based authentication, and team management.
+1. Firstly make a file called app
+2. Then write all of the code, always use app.module references, instead of relative paths.
+3. Make sure all of the code works, it is going straight to production.
+
+
+Conventions:
+Always use pydantic_settings import BaseSettings instead of pydantic import BaseSettings
+The method "from_orm" in class "BaseModel" is deprecated
+The `from_orm` method is deprecated; set `model_config['from_attributes']=True` and use `model_validate` instead.
+
+The below should not be func.now(), it should be func.now 
+created_at = Column(DateTime(timezone=True), server_default=func.now)
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now)
+
+---
+
+## Components
+
+### 1. Database Models
+
+#### 1.1 User Model
+- Fields:
+  - id: UUID (primary key)
+  - email: String (unique, indexed)
+  - hashed_password: String
+  - is_active: Boolean
+  - is_superuser: Boolean
+  - first_name: String
+  - last_name: String
+  - created_at: DateTime
+  - updated_at: DateTime
+- Use SQLAlchemy for ORM
+- Ensure email uniqueness
+
+#### 1.2 Team Model
+- Fields:
+  - id: UUID (primary key)
+  - name: String
+  - description: String (nullable)
+  - created_at: DateTime
+  - updated_at: DateTime
+
+#### 1.3 UserTeam Model (Association Table)
+- Fields:
+  - user_id: UUID (foreign key to User)
+  - team_id: UUID (foreign key to Team)
+  - role: String (e.g., 'member', 'admin')
+  - joined_at: DateTime
+
+### 2. Password Hashing
+- Use bcrypt for password hashing
+- Implement password verification function
+
+### 3. JWT Token Generation and Validation
+- Use python-jose for JWT handling
+- Token payload: user_id, email, teams, roles, expiration time
+- Implement token generation and validation functions
+
+### 4. Endpoints
+
+#### 4.1 User Registration
+- Path: /auth/register
+- Method: POST
+- Request Body: email, password, first_name, last_name
+- Response: User object (exclude password)
+- Functionality:
+  - Validate email format
+  - Check for existing user
+  - Hash password
+  - Create new user in database
+  - Return user object
+
+#### 4.2 User Login
+- Path: /auth/login
+- Method: POST
+- Request Body: email, password
+- Response: JWT token
+- Functionality:
+  - Verify user credentials
+  - Generate JWT token with user info and team roles
+  - Return token
+
+#### 4.3 Password Reset Request
+- Path: /auth/password-reset-request
+- Method: POST
+- Request Body: email
+- Response: Success message
+- Functionality:
+  - Verify email exists
+  - Generate password reset token
+  - Send reset email (implement email sending functionality)
+
+#### 4.4 Password Reset
+- Path: /auth/password-reset
+- Method: POST
+- Request Body: token, new_password
+- Response: Success message
+- Functionality:
+  - Validate reset token
+  - Update user's password
+  - Invalidate all existing JWT tokens for the user
+
+#### 4.5 Get Current User
+- Path: /auth/me
+- Method: GET
+- Headers: Authorization: Bearer {token}
+- Response: User object with teams and roles
+- Functionality:
+  - Validate JWT token
+  - Return current user's information, including teams and roles
+
+#### 4.6 Create Team
+- Path: /teams
+- Method: POST
+- Headers: Authorization: Bearer {token}
+- Request Body: name, description
+- Response: Team object
+- Functionality:
+  - Create new team
+  - Add current user as team admin
+
+#### 4.7 Invite User to Team
+- Path: /teams/{team_id}/invite
+- Method: POST
+- Headers: Authorization: Bearer {token}
+- Request Body: email, role
+- Response: Success message
+- Functionality:
+  - Verify user has admin rights for the team
+  - Check if user exists, if not, send invitation email
+  - If user exists, add to team with specified role
+
+#### 4.8 Accept Team Invitation
+- Path: /teams/accept-invitation
+- Method: POST
+- Request Body: invitation_token
+- Response: Success message
+- Functionality:
+  - Validate invitation token
+  - Add user to team with specified role
+
+#### 4.9 List User's Teams
+- Path: /auth/teams
+- Method: GET
+- Headers: Authorization: Bearer {token}
+- Response: List of teams with user's role in each
+- Functionality:
+  - Retrieve all teams associated with the current user
+
+### 5. Middleware
+- Implement middleware for JWT validation on protected routes
+- Add team-based authorization middleware
+- Implement a refresh token system to handle token expiration
+
+### 6. Rate Limiting
+- Implement rate limiting on login, registration, and password reset endpoints to prevent brute force attacks
+
+### 7. Logging
+- Log all authentication attempts (successful and failed)
+- Log team creation and user invitation events
+- Ensure GDPR compliance in logging practices
+
+### 8. Testing
+- Unit tests for all authentication and team management functions
+- Integration tests for all endpoints
+- Test cases for both successful and failed scenarios
+- Test team-based authorization scenarios
+
+### 9. Security Considerations
+- Implement HTTPS
+- Use secure headers (HSTS, CSP, etc.)
+- Implement CORS with appropriate restrictions
+- Ensure proper error handling without leaking sensitive information
+- Implement proper authorization checks for team management functions
+
+### 10. Database Migrations
+- Use Alembic for database migrations
+- Create initial migration for users, teams, and user_team tables
+- Document migration process for future schema changes
+
+### 11. Caching
+- Implement caching for frequently accessed user and team data
+- Use Redis or a similar in-memory data store for caching
+
+### 12. Performance Optimization
+- Index frequently queried fields in the database
+- Optimize database queries for user and team retrieval
+
+### 13. Scalability Considerations
+- Design the authentication system to be stateless for horizontal scaling
+- Consider implementing a distributed cache for session management in a multi-server setup

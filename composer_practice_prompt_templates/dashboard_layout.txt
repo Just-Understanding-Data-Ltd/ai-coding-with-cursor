@@ -1,0 +1,7 @@
+
+1. I want you to generate a dashboard layout, i.e. a navigation side bar and a main content area.
+2. The side bar should have a logo at the top, and icons when it is smaller, then words when it is larger
+3. The user should be able to collapse and expand the side bar
+4. The main content area should take up the remaining space
+5. The main content area should have a header with a title and a subtitle
+6. It should contain a user profile icon in the top right corner which shows a dropdown menu when clicked, and a sign out button, there should be a default image if the user does not have a profile picture

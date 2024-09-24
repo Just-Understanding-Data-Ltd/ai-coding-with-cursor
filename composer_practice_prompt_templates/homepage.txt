@@ -1,0 +1,6 @@
+Make a great homepage for my SaaS application where I can fill in the copy + image details later.
+Add a features section
+Add a pricing section
+Add a faq section
+Add a contact section
+Add a footer section

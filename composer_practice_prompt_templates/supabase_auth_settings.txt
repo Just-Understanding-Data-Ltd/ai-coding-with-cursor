@@ -1,0 +1,135 @@
+# front-end.txt - Frontend Specification
+
+## Overview
+Develop a Next.js frontend with client-side components for user authentication.
+
+# 1. Supabase Setup
+Firstly I want you to create a supabase folder in lib and put the following files in it:
+
+@lib/supabase/client.ts
+
+```typescript
+import { createBrowserClient } from "@supabase/ssr";
+
+export function createClient() {
+  return createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+}
+```
+
+
+lib/supabase/server.ts
+
+```typescript
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
+
+export function createClient() {
+  const cookieStore = cookies();
+
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
+          } catch {
+            // The `setAll` method was called from a Server Component.
+            // This can be ignored if you have middleware refreshing
+            // user sessions.
+          }
+        },
+      },
+    }
+  );
+}
+```
+
+@lib/supabase/middleware.ts
+
+```typescript
+import { createServerClient } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from "next/server";
+
+export async function updateSession(request: NextRequest) {
+  let supabaseResponse = NextResponse.next({
+    request,
+  });
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          );
+          supabaseResponse = NextResponse.next({
+            request,
+          });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          );
+        },
+      },
+    }
+  );
+
+  // refreshing the auth token
+  await supabase.auth.getUser();
+
+  return supabaseResponse;
+}
+```
+
+Then I want you to create a middleware.ts file in the root of the project and put the following code in it::
+```typescript
+import { type NextRequest } from "next/server";
+import { updateSession } from "@/lib/supabase/middleware";
+
+export async function middleware(request: NextRequest) {
+  return await updateSession(request);
+}
+
+export const config = {
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * Feel free to modify this pattern to include more paths.
+     */
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+  ],
+};
+```
+
+## Components
+
+### 2. Authentication Pages
+
+#### 2.1 Login Page
+- Path: /app/login/page.tsx
+- Features:
+  - This page will consist of a magic link + google sign in button + component.
+
+# 3 Generate 2 stripe webhook endpoints for creating a checkout session and handling the webhook
+# For the stripe webhook, we should handle all edge cases and should use the supabase client in client/lib/supabase/server.ts
+
+# 4. Create react components for signing in with magic link, google sign in and email/password sign in
+
+# 5. Create a button component that will be used for Stripe single purchase or annual purchase

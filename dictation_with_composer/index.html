@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Dope Todo App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        #todo-list {
+            background-color: white;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .todo-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 3px;
+        }
+        .todo-item.completed {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+        .todo-item input[type="checkbox"] {
+            margin-right: 10px;
+        }
+        .todo-item button {
+            margin-left: auto;
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        #new-todo {
+            display: flex;
+            margin-top: 20px;
+        }
+        #new-todo input {
+            flex-grow: 1;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 3px 0 0 3px;
+        }
+        #new-todo button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 0 3px 3px 0;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Super Dope Todo App</h1>
+    <div id="todo-list"></div>
+    <div id="new-todo">
+        <input type="text" id="new-todo-input" placeholder="Enter a new todo">
+        <button onclick="addTodo()">Add Todo</button>
+    </div>
+
+    <script>
+        const API_URL = '';  // Use relative paths
+
+        async function fetchTodos() {
+            const response = await fetch(`${API_URL}/todos`);
+            const todos = await response.json();
+            renderTodos(todos);
+        }
+
+        function renderTodos(todos) {
+            const todoList = document.getElementById('todo-list');
+            todoList.innerHTML = '';
+            todos.forEach(todo => {
+                const todoItem = document.createElement('div');
+                todoItem.className = `todo-item ${todo.completed ? 'completed' : ''}`;
+                todoItem.innerHTML = `
+                    <input type="checkbox" ${todo.completed ? 'checked' : ''} onchange="updateTodo('${todo.id}', this.checked)">
+                    <span>${todo.task}</span>
+                    <button onclick="deleteTodo('${todo.id}')">Delete</button>
+                `;
+                todoList.appendChild(todoItem);
+            });
+        }
+
+        async function addTodo() {
+            const input = document.getElementById('new-todo-input');
+            const task = input.value.trim();
+            if (task) {
+                const newTodo = {
+                    id: crypto.randomUUID(),
+                    task: task,
+                    completed: false
+                };
+                try {
+                    const response = await fetch(`${API_URL}/todos`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(newTodo)
+                    });
+                    if (response.ok) {
+                        input.value = '';
+                        fetchTodos();
+                    } else {
+                        console.error('Failed to add todo:', await response.text());
+                    }
+                } catch (error) {
+                    console.error('Error adding todo:', error);
+                }
+            }
+        }
+
+        async function updateTodo(id, completed) {
+            const response = await fetch(`${API_URL}/todos/${id}?completed=${completed}`, {method: 'PUT'});
+            if (response.ok) {
+                fetchTodos();
+            }
+        }
+
+        async function deleteTodo(id) {
+            const response = await fetch(`${API_URL}/todos/${id}`, {method: 'DELETE'});
+            if (response.ok) {
+                fetchTodos();
+            }
+        }
+
+        fetchTodos();
+    </script>
+</body>
+</html>
