@@ -1,4 +1,4 @@
-# AI Coding with Cursor
+# AI Coding with Cursor 🚀
 A Github repository for the [AI Coding with Cursor Course on Udemy](https://www.udemy.com/course/ai-coding-with-cursor/).
 
 
