@@ -21,6 +21,7 @@ Here is an overview of the folders in this repository:
 - [**9_composer_introduction**](./9_composer_introduction): Introduction to using Composer in your projects.
 - [**10_composer_practice_prompt_templates**](./10_composer_practice_prompt_templates): Practice prompt templates for Composer.
 - [**11_dictation_with_composer**](./11_dictation_with_composer): Using dictation features with Composer.
+- [**useful_prompts_for_cursor**](./useful_prompts_for_cursor): A collection of prompts designed to automate specific tasks within Cursor. These prompts are useful for generating comments, explaining code, and improving codebase indexing, providing more context for the LLM to understand and assist with the code.
 
 ## Contributing
 
