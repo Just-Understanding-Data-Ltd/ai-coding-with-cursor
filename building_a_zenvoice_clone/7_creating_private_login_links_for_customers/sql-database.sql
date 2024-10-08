@@ -102,3 +102,13 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 ALTER TABLE stripe_accounts
 ADD CONSTRAINT unique_user_stripe_account UNIQUE (user_id, stripe_account_id);
+
+ALTER TABLE public.private_links
+DROP COLUMN user_id;
+
+ALTER TABLE public.private_links
+ADD COLUMN email TEXT NOT NULL DEFAULT ''::TEXT;
+
+ALTER TABLE public.private_links
+ADD COLUMN user_id UUID NULL,
+ADD CONSTRAINT private_links_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users (id) ON DELETE CASCADE;
