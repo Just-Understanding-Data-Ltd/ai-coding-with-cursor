@@ -1,9 +1,24 @@
 "use server";
 
-import { stripe } from "@/utils/stripe";
+import Stripe from "stripe";
 import { createClient } from "@/utils/supabase/server";
 import { config } from "@/config";
 import { CheckoutSessionData, UserStatus } from "@/types/auth";
+
+// If it is
+const isProduction = process.env.NODE_ENV === "production";
+// Use either STRIPE_SECRET_KEY_PROD or STRIPE_SECRET_KEY_DEV
+const stripeSecretKey = isProduction
+  ? process.env.STRIPE_SECRET_KEY_PROD
+  : process.env.STRIPE_SECRET_KEY_DEV;
+
+if (!stripeSecretKey) {
+  throw new Error("Stripe secret key is not set");
+}
+
+const stripe = new Stripe(stripeSecretKey, {
+  apiVersion: "2024-09-30.acacia", // Update to the latest API version
+});
 
 async function createOrRetrieveCustomer(email: string): Promise<string> {
   const customers = await stripe.customers.list({ email: email, limit: 1 });

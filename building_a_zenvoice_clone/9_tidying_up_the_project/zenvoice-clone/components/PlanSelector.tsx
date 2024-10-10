@@ -71,7 +71,7 @@ export function PlanSelector({
         <div className="mb-4">
           <label
             htmlFor="email"
-            className="block text-sm font-medium text-gray-700"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
           >
             Email address (required for subscription plans)
           </label>
@@ -81,17 +81,25 @@ export function PlanSelector({
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Enter your email"
+            className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
           />
         </div>
       )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {plans.map((plan) => (
-          <Card key={plan.name} className="flex flex-col">
+          <Card
+            key={plan.name}
+            className="flex flex-col bg-white dark:bg-gray-800"
+          >
             <CardHeader>
-              <CardTitle>{plan.name}</CardTitle>
+              <CardTitle className="text-gray-900 dark:text-white">
+                {plan.name}
+              </CardTitle>
             </CardHeader>
             <CardContent className="flex-grow">
-              <p className="text-2xl font-bold">{plan.price}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                {plan.price}
+              </p>
               <p className="text-gray-600 dark:text-gray-400">
                 {plan.description}
               </p>
@@ -103,7 +111,7 @@ export function PlanSelector({
                   isLoading ||
                   (plan.mode === "subscription" && !userEmail && !email)
                 }
-                className="w-full"
+                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 dark:bg-primary-dark dark:text-primary-dark-foreground dark:hover:bg-primary-dark/90"
               >
                 {isLoading ? "Processing..." : `Select ${plan.name}`}
               </Button>

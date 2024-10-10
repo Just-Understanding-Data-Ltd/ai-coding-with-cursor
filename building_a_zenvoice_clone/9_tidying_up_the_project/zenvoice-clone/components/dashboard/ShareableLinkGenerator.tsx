@@ -10,7 +10,7 @@ import {
   CardContent,
   CardDescription,
 } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { Loader2, Copy } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/utils/supabase/client";
@@ -82,10 +82,12 @@ export default function ShareableLinkGenerator({
   };
 
   return (
-    <Card className="w-full">
+    <Card className="w-full bg-white dark:bg-gray-800">
       <CardHeader>
-        <CardTitle>Generate Shareable Login Link</CardTitle>
-        <CardDescription>
+        <CardTitle className="text-gray-900 dark:text-white">
+          Generate Shareable Login Link
+        </CardTitle>
+        <CardDescription className="text-gray-600 dark:text-gray-400">
           Create a secure login link for your customers to access their
           invoices. They can use this link to self-serve and view their billing
           information.
@@ -93,29 +95,50 @@ export default function ShareableLinkGenerator({
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="customerEmail">Customer Email (Optional)</Label>
+          <Label
+            htmlFor="customerEmail"
+            className="text-gray-900 dark:text-white"
+          >
+            Customer Email (Optional)
+          </Label>
           <Input
             id="customerEmail"
             type="email"
             placeholder="customer@example.com"
             value={customerEmail}
             onChange={(e) => setCustomerEmail(e.target.value)}
+            className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           />
         </div>
-        <Button onClick={generateLink} disabled={isLoading || !stripeAccountId}>
+        <Button
+          onClick={generateLink}
+          disabled={isLoading || !stripeAccountId}
+          className="bg-primary text-primary-foreground hover:bg-primary/90 dark:bg-primary-dark dark:text-primary-dark-foreground dark:hover:bg-primary-dark/90"
+        >
           {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
           Generate Link
         </Button>
         {generatedLink && (
           <div className="space-y-2">
-            <Label>Shareable Login Link</Label>
+            <Label className="text-gray-900 dark:text-white">
+              Shareable Login Link
+            </Label>
             <div className="flex items-center space-x-2">
-              <Input value={generatedLink} readOnly className="flex-grow" />
-              <Button size="icon" variant="ghost" onClick={copyLink}>
+              <Input
+                value={generatedLink}
+                readOnly
+                className="flex-grow bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={copyLink}
+                className="text-gray-900 dark:text-white"
+              >
                 <Copy className="h-4 w-4" />
               </Button>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               Share this link with your customer to provide them access to their
               invoices.
             </p>

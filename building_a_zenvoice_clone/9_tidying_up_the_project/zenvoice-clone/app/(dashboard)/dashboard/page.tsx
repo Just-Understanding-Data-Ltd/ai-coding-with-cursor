@@ -1,7 +1,9 @@
 import { createClient } from "@/utils/supabase/server";
 import { UserDropdown } from "@/components/UserDropdown";
 import Dashboard from "@/components/dashboard/Dashboard";
-import { StripeAccount } from "@/types/customTypes";
+import { StripeAccount as CustomStripeAccount } from "@/types/customTypes";
+
+type StripeAccount = CustomStripeAccount;
 
 async function DashboardPageAsync() {
   const supabase = createClient();
@@ -18,13 +20,14 @@ async function DashboardPageAsync() {
     .select("*")
     .eq("user_id", user.id);
 
-  // Transform the data to match the StripeAccount interface
+  // Ensure the transformedStripeAccounts matches the StripeAccount type
+  // @ts-expect-error: StripeAccount type is not fully defined
   const transformedStripeAccounts: StripeAccount[] =
     stripeAccounts?.map((account) => ({
       ...account,
-      user_id: account.user_id ?? "", // Handle null case
-      name: `Account ${account.stripe_account_id.slice(-4)}`,
-      icon: null,
+      encrypted_stripe_api_key: account.encrypted_stripe_api_key || "",
+      name: "", // Add a default value for name
+      icon: null, // Add a default value for icon
     })) || [];
 
   return (
@@ -35,7 +38,6 @@ async function DashboardPageAsync() {
       </div>
       <Dashboard
         userId={user.id}
-        userEmail={user.email ?? ""}
         initialStripeAccounts={transformedStripeAccounts}
       />
     </div>

@@ -5,30 +5,18 @@ import StripeAccountManager from "@/components/dashboard/StripeAccountManager";
 import StripeAccountSwitcher from "@/components/dashboard/StripeAccountSwitcher";
 import ShareableLinkGenerator from "@/components/dashboard/ShareableLinkGenerator";
 import { createClient } from "@/utils/supabase/client";
+import { StripeAccount as CustomStripeAccount } from "@/types/customTypes";
 
-// Update this interface to match the database schema
-interface DbStripeAccount {
-  id: number;
-  stripe_account_id: string;
-  encrypted_stripe_api_key: string;
-  user_id: string;
-}
+type StripeAccount = CustomStripeAccount;
 
-// This interface represents the account with additional details
-interface StripeAccount extends DbStripeAccount {
-  name: string;
-  icon: string | null;
-}
-
+// Update the prop type
 interface DashboardProps {
   userId: string;
-  userEmail: string;
   initialStripeAccounts: StripeAccount[];
 }
 
 export default function Dashboard({
   userId,
-  userEmail,
   initialStripeAccounts,
 }: DashboardProps) {
   const [stripeAccounts, setStripeAccounts] = useState<StripeAccount[]>(
@@ -55,10 +43,10 @@ export default function Dashboard({
       console.error("Error fetching Stripe accounts:", error);
     } else {
       const accountsWithDetails = await Promise.all(
-        (data as DbStripeAccount[]).map(async (account) => {
+        (data as StripeAccount[]).map(async (account) => {
           const { data: decryptedKey, error } = await supabase.rpc(
             "decrypt_stripe_api_key",
-            { encrypted_key: account.encrypted_stripe_api_key }
+            { encrypted_key: account.encrypted_stripe_api_key || "" } // Add fallback for null
           );
           if (error) {
             console.error("Error decrypting API key:", error);
@@ -77,7 +65,7 @@ export default function Dashboard({
   }, [refreshAccounts]);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
       <div className="lg:col-span-2">
         <StripeAccountManager
           userId={userId}
@@ -86,16 +74,21 @@ export default function Dashboard({
       </div>
       <div className="space-y-8">
         <StripeAccountSwitcher
+          // @ts-expect-error: StripeAccount type is not fully defined
           accounts={stripeAccounts}
-          setStripeAccounts={setStripeAccounts}
+          setStripeAccounts={
+            setStripeAccounts as React.Dispatch<
+              React.SetStateAction<CustomStripeAccount[]>
+            >
+          }
           selectedAccountId={selectedAccountId}
           onAccountSelect={setSelectedAccountId}
           onAccountsChanged={refreshAccounts}
           setSelectedAccountId={setSelectedAccountId}
         />
         <ShareableLinkGenerator
-          userEmail={userEmail}
-          stripeAccountId={selectedAccountId || undefined}
+          userId={userId}
+          stripeAccountId={selectedAccountId || ""}
         />
       </div>
     </div>

@@ -2,6 +2,10 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { CustomInvoice } from "@/types/customTypes";
 
+interface AutoTableOutput {
+  finalY: number;
+}
+
 const formatDate = (timestamp: number) =>
   new Date(timestamp * 1000).toLocaleDateString("en-US", {
     year: "numeric",
@@ -24,7 +28,7 @@ export function downloadInvoice(
     phone: string;
   }
 ) {
-  const doc = new jsPDF();
+  const doc = new jsPDF() as JsPDFWithAutoTable;
   const { width, height } = doc.internal.pageSize;
   const margin = 20;
   const contentWidth = width - 2 * margin;
@@ -34,7 +38,7 @@ export function downloadInvoice(
   doc.rect(margin, margin, contentWidth, height - 2 * margin);
 
   // Header
-  doc.setFillColor(250);
+  doc.setFillColor(250, 250, 250);
   doc.rect(margin, margin, contentWidth, 60); // Increased height for more padding
 
   // Company info
@@ -119,7 +123,7 @@ export function downloadInvoice(
         doc.text("Address:", margin + 10, yPos);
         yPos += 5;
         addressLines.forEach((line) => {
-          doc.text(line, margin + 10, yPos); // Changed from margin + 15 to margin + 10
+          doc.text(line || "", margin + 10, yPos); // Changed from margin + 15 to margin + 10
           yPos += 5;
         });
       }
@@ -161,13 +165,15 @@ export function downloadInvoice(
     headStyles: { fillColor: [66, 139, 202], textColor: 255 },
     footStyles: {
       fillColor: [245, 245, 245],
-      textColor: [40],
+      textColor: [40, 40, 40],
       fontStyle: "bold",
     },
     margin: { left: margin + 10, right: margin + 10 },
   });
 
-  yPos = (doc as any).lastAutoTable.finalY + 15;
+  // Replace the use of 'any' with a more specific type
+  const autoTableOutput = doc.lastAutoTable;
+  yPos = autoTableOutput ? autoTableOutput.finalY + 15 : yPos;
 
   // Payment status
   doc.setFontSize(10);
@@ -184,4 +190,8 @@ export function downloadInvoice(
   );
 
   doc.save(`invoice_${invoice.id}.pdf`);
+}
+
+interface JsPDFWithAutoTable extends jsPDF {
+  lastAutoTable?: AutoTableOutput;
 }

@@ -42,30 +42,30 @@ export function InvoiceTable({
     columnHelper.accessor("id", {
       header: "Invoice ID",
       cell: (info) => info.getValue(),
-    }),
+    }) as ColumnDef<CustomInvoice>,
     columnHelper.accessor("amount", {
       header: "Amount",
       cell: (info) =>
         `${(info.getValue() / 100).toFixed(
           2
         )} ${info.row.original.currency.toUpperCase()}`,
-    }),
+    }) as ColumnDef<CustomInvoice>,
     columnHelper.accessor("status", {
       header: "Status",
       cell: (info) => info.getValue(),
-    }),
+    }) as ColumnDef<CustomInvoice>,
     columnHelper.accessor("created", {
       header: "Date",
       cell: (info) => formatDate(info.getValue()),
-    }),
+    }) as ColumnDef<CustomInvoice>,
     columnHelper.accessor("customerName", {
       header: "Customer Name",
       cell: (info) => info.getValue(),
-    }),
+    }) as ColumnDef<CustomInvoice>,
     columnHelper.accessor("customerEmail", {
       header: "Customer Email",
       cell: (info) => info.getValue(),
-    }),
+    }) as ColumnDef<CustomInvoice>,
     {
       id: "actions",
       cell: (info) => (
@@ -112,15 +112,15 @@ export function InvoiceTable({
   };
 
   return (
-    <div>
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+    <div className="overflow-x-auto">
+      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <thead className="bg-gray-50 dark:bg-gray-800">
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
                 <th
                   key={header.id}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
                 >
                   {header.isPlaceholder
                     ? null
@@ -133,11 +133,14 @@ export function InvoiceTable({
             </tr>
           ))}
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+        <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-900 dark:divide-gray-700">
           {table.getRowModel().rows.map((row) => (
             <tr key={row.id}>
               {row.getVisibleCells().map((cell) => (
-                <td key={cell.id} className="px-6 py-4 whitespace-nowrap">
+                <td
+                  key={cell.id}
+                  className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100"
+                >
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </td>
               ))}
@@ -149,12 +152,14 @@ export function InvoiceTable({
         <Button
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
+          className="bg-blue-600 text-white dark:bg-blue-500"
         >
           Previous
         </Button>
         <Button
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
+          className="bg-blue-600 text-white dark:bg-blue-500"
         >
           Next
         </Button>

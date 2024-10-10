@@ -12,7 +12,7 @@ import {
   CardContent,
   CardDescription,
 } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { Loader2 } from "lucide-react";
 import Stripe from "stripe";
 import { useRouter } from "next/navigation";
@@ -117,22 +117,24 @@ export default function StripeAccountManager({
   };
 
   return (
-    <Card className="w-full">
+    <Card className="w-full bg-white dark:bg-gray-800">
       <CardHeader>
-        <CardTitle>Add Stripe account</CardTitle>
-        <CardDescription>
+        <CardTitle className="text-gray-900 dark:text-white">
+          Add Stripe account
+        </CardTitle>
+        <CardDescription className="text-gray-600 dark:text-gray-400">
           Your customers will be able to generate, edit & download invoices
           under this account.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <ol className="list-decimal list-inside mb-4 space-y-2">
+        <ol className="list-decimal list-inside mb-4 space-y-2 text-gray-900 dark:text-white">
           <li>
             <a
               href="https://dashboard.stripe.com/apikeys/create?name=Invoicely&permissions%5B%5D=rak_file_write&permissions%5B%5D=rak_customer_read&permissions%5B%5D=rak_payment_intent_read&permissions%5B%5D=rak_bucket_connect_read&permissions%5B%5D=rak_credit_note_read&permissions%5B%5D=rak_checkout_session_read&permissions%5B%5D=rak_charge_read"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-500 hover:underline"
+              className="text-blue-500 hover:underline dark:text-blue-400"
             >
               Generate a restricted API key
             </a>
@@ -149,11 +151,12 @@ export default function StripeAccountManager({
               {...register("apiKey", { required: true })}
               type="password"
               placeholder="rk_live_******************"
+              className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
             <Button
               type="submit"
               disabled={isLoading}
-              className="absolute right-0 top-0 h-full"
+              className="absolute right-0 top-0 h-full bg-primary text-primary-foreground hover:bg-primary/90 dark:bg-primary-dark dark:text-primary-dark-foreground dark:hover:bg-primary-dark/90"
             >
               {isLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -163,7 +166,7 @@ export default function StripeAccountManager({
             </Button>
           </div>
         </form>
-        <p className="mt-4 text-sm text-gray-600">
+        <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
           It will populate invoices with your Stripe account public business
           details
         </p>

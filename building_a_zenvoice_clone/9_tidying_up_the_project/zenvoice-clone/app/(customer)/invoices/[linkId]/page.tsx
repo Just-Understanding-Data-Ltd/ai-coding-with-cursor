@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { InvoiceDisplay } from "@/components/invoices/InvoiceDisplay";
 import { fetchInvoicesAction } from "@/app/actions/fetchInvoicesAction";
 import { CustomInvoice } from "@/types/customTypes";
+import { PulseLoader } from "react-spinners";
 
 export default function CustomerInvoicePage({
   params,
@@ -19,10 +20,7 @@ export default function CustomerInvoicePage({
   useEffect(() => {
     async function loadInvoices() {
       try {
-        const result = await fetchInvoicesAction(
-          params.linkId,
-          "single-payments"
-        );
+        const result = await fetchInvoicesAction(params.linkId);
         setInvoices(result);
       } catch (err) {
         console.error("Error fetching invoices:", err);
@@ -46,9 +44,9 @@ export default function CustomerInvoicePage({
 
   if (!invoices) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-4">Your Invoices</h1>
-        <p>Loading...</p>
+      <div className="container mx-auto px-4 py-8 flex flex-col items-center justify-center min-h-screen">
+        <h1 className="text-2xl font-bold mb-4">Loading Your Invoices</h1>
+        <PulseLoader color="#4F46E5" size={15} margin={2} />
       </div>
     );
   }

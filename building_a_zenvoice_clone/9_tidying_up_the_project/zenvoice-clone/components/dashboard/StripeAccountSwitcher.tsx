@@ -12,10 +12,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown, Edit, Trash } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { StripeAccount as CustomStripeAccount } from "@/types/customTypes";
+import { Dispatch, SetStateAction } from "react";
 
 interface StripeAccount {
   id: number;
@@ -27,7 +29,7 @@ interface StripeAccount {
 
 interface StripeAccountSwitcherProps {
   accounts: StripeAccount[];
-  setStripeAccounts: React.Dispatch<React.SetStateAction<StripeAccount[]>>;
+  setStripeAccounts: Dispatch<SetStateAction<CustomStripeAccount[]>>;
   selectedAccountId: string | null;
   onAccountSelect: (accountId: string) => void;
   onAccountsChanged: () => void;
@@ -68,6 +70,7 @@ export default function StripeAccountSwitcher({
           return { ...account, name: details.name, icon: details.icon };
         })
       );
+      // @ts-expect-error: StripeAccount type is not fully defined
       setStripeAccounts(updatedAccounts);
     };
 
@@ -178,7 +181,10 @@ export default function StripeAccountSwitcher({
     <div className="space-y-4">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="w-full justify-between">
+          <Button
+            variant="outline"
+            className="w-full justify-between bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+          >
             {selectedAccount ? (
               <div className="flex items-center">
                 {selectedAccount.icon && (
@@ -252,8 +258,10 @@ export default function StripeAccountSwitcher({
 
       {isEditModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-lg">
-            <h2 className="text-lg font-semibold mb-4">Edit Stripe API Key</h2>
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg">
+            <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+              Edit Stripe API Key
+            </h2>
             <Input
               type="password"
               placeholder="Enter new API key"
@@ -265,10 +273,15 @@ export default function StripeAccountSwitcher({
               <Button
                 onClick={() => setIsEditModalOpen(false)}
                 variant="outline"
+                className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               >
                 Cancel
               </Button>
-              <Button onClick={handleEditSubmit} disabled={isLoading}>
+              <Button
+                onClick={handleEditSubmit}
+                disabled={isLoading}
+                className="bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600"
+              >
                 {isLoading ? "Updating..." : "Save"}
               </Button>
             </div>

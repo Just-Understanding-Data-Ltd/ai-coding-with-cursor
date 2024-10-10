@@ -1,4 +1,8 @@
+"use client";
+
 import { redirect } from "next/navigation";
+import { InvoiceDisplay } from "@/components/invoices/InvoiceDisplay";
+import { ThemeProvider } from "next-themes";
 
 export default function InvoiceAccessPage({
   searchParams,
@@ -17,10 +21,13 @@ export default function InvoiceAccessPage({
   console.log(`Accessing private invoices page with token: ${token}`);
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Your Invoices</h1>
-      <p>This is a placeholder for the private invoices page.</p>
-      <p>Access Token: {token}</p>
-    </div>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <div className="container mx-auto p-4">
+        <InvoiceDisplay
+          initialInvoices={{ singlePayments: [], subscriptions: [] }}
+          linkId={token}
+        />
+      </div>
+    </ThemeProvider>
   );
 }
