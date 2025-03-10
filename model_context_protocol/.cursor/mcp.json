@@ -7,6 +7,9 @@
         "@modelcontextprotocol/server-postgres",
         "postgresql://postgres:postgres@127.0.0.1:54322/postgres"
       ]
+    },
+    "my-custom-mcp-server": {
+      "command": "node /Users/jamesaphoenix/Desktop/projects/just_understanding_data/ai-coding-with-cursor/model_context_protocol/server/dist/index.js"
     }
   }
 }

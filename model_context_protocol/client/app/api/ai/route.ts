@@ -61,8 +61,8 @@ export async function POST(req: NextRequest) {
           if (result.content && Array.isArray(result.content)) {
             // Handle content array from MCP tool call
             const textContent = result.content
-              .filter((item: any) => item.type === "text")
-              .map((item: any) => item.text)
+              .filter((item: { type: string }) => item.type === "text")
+              .map((item: { text: string }) => item.text)
               .join("\n");
 
             if (textContent) {
@@ -140,7 +140,7 @@ export async function POST(req: NextRequest) {
         };
 
         // Add the user message for context if available
-        let promptMessages = [systemMessage];
+        const promptMessages = [systemMessage];
         if (messages && messages.length > 0) {
           const userMessage = messages[messages.length - 1];
           promptMessages.push({
@@ -241,7 +241,7 @@ export async function POST(req: NextRequest) {
         // Make the OpenAI API call with streaming
         const stream = await openai.chat.completions.create({
           model: "gpt-4o-mini",
-          messages: openaiMessages as any, // Type assertion to satisfy TypeScript
+          messages: openaiMessages as ChatMessage[], // Type assertion to satisfy TypeScript
           stream: true,
           temperature: 0.7,
           max_tokens: 800,
@@ -249,23 +249,6 @@ export async function POST(req: NextRequest) {
 
         // Create a TransformStream to handle the chunks
         const encoder = new TextEncoder();
-        const decoder = new TextDecoder();
-        let counter = 0;
-
-        const transformStream = new TransformStream({
-          async transform(chunk, controller) {
-            counter++;
-
-            // OpenAI might send empty chunks - skip them
-            if (chunk === undefined) {
-              return;
-            }
-
-            const text =
-              typeof chunk === "string" ? chunk : decoder.decode(chunk);
-            controller.enqueue(encoder.encode(text));
-          },
-        });
 
         // Handle streaming from OpenAI's API
         const readableStream = new ReadableStream({
@@ -292,7 +275,7 @@ export async function POST(req: NextRequest) {
 
         // Check if it's an API key or rate limit issue
         if (error instanceof Error) {
-          const apiError = error as any;
+          const apiError = error as unknown as { status: number };
           if (apiError.status === 401) {
             responseText =
               "API key error: Please check your OpenAI API key configuration.";
