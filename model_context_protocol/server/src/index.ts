@@ -5,6 +5,8 @@ import {
   GetPromptRequestSchema,
   ListResourcesRequestSchema,
   ReadResourceRequestSchema,
+  ListToolsRequestSchema,
+  CallToolRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 
 // Define some content resources
@@ -171,7 +173,25 @@ const prompts = {
   },
 };
 
-// Create the server
+// Define tools
+const tools = {
+  weather: {
+    name: "weather",
+    description: "Get the current weather for a location",
+    inputSchema: {
+      type: "object",
+      properties: {
+        location: {
+          type: "string",
+          description: "The location to get weather for",
+        },
+      },
+      required: ["location"],
+    },
+  },
+};
+
+// Create the server with explicit tool capabilities
 const server = new Server(
   {
     name: "content-creator-server",
@@ -181,6 +201,11 @@ const server = new Server(
     capabilities: {
       resources: {},
       prompts: {},
+      tools: {
+        // Explicitly enable tools capability
+        callTool: true,
+        listTools: true,
+      },
     },
   }
 );
@@ -314,12 +339,84 @@ Focus on maintaining the original message while adding:
   throw new Error(`Prompt not found: ${name}`);
 });
 
-async function main() {
-  // Connect to transport
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
+// Handle listing tools
+server.setRequestHandler(ListToolsRequestSchema, async () => {
+  console.error("ListTools handler called - returning tools");
+  return {
+    tools: Object.values(tools),
+  };
+});
 
-  console.error("Content Creator MCP Server running...");
+// Handle tool execution
+server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  console.error(`CallTool handler called with params:`, request.params);
+
+  const { name, arguments: args } = request.params;
+
+  // Handle the weather tool
+  if (name === "weather") {
+    console.error(`Executing weather tool with args:`, args);
+    const location = args?.location || "Unknown location";
+
+    // Mock weather data - in a real implementation, you would call a weather API
+    const weatherData = {
+      location: location,
+      temperature: Math.floor(Math.random() * 30) + 5, // Random temp between 5-35°C
+      condition: ["Sunny", "Cloudy", "Rainy", "Partly Cloudy", "Stormy"][
+        Math.floor(Math.random() * 5)
+      ],
+      humidity: Math.floor(Math.random() * 50) + 30, // Random humidity between 30-80%
+      windSpeed: Math.floor(Math.random() * 30), // Random wind speed 0-30 km/h
+    };
+
+    // Format the response
+    const weatherText = `
+Weather for ${weatherData.location}:
+Temperature: ${weatherData.temperature}°C
+Condition: ${weatherData.condition}
+Humidity: ${weatherData.humidity}%
+Wind Speed: ${weatherData.windSpeed} km/h
+    `.trim();
+
+    console.error(`Weather response:`, weatherText);
+
+    // Return the weather information
+    return {
+      content: [
+        {
+          type: "text",
+          text: weatherText,
+        },
+      ],
+    };
+  }
+
+  console.error(`Tool not found: ${name}`);
+  throw new Error(`Tool not found: ${name}`);
+});
+
+async function main() {
+  try {
+    // Connect to transport
+    const transport = new StdioServerTransport();
+
+    // Log before connecting
+    console.error("Connecting MCP server with tools...");
+
+    // Connect the server
+    await server.connect(transport);
+
+    // Log successful connection
+    console.error(
+      "Content Creator MCP Server running with tools capability..."
+    );
+
+    // Log available tools
+    console.error("Available tools:", Object.keys(tools));
+  } catch (error) {
+    console.error("Error starting server:", error);
+    process.exit(1);
+  }
 }
 
 main().catch((error) => {

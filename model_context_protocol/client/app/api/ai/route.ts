@@ -1,6 +1,14 @@
 import { NextRequest } from "next/server";
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import OpenAI from "openai";
+import { MCPClient } from "@/lib/mcp-client";
+
+// Define types for chat messages
+type Role = "system" | "user" | "assistant";
+
+interface ChatMessage {
+  role: Role;
+  content: string;
+}
 
 // Custom implementation of StreamingTextResponse since the ai package might have issues
 class StreamingTextResponse extends Response {
@@ -15,79 +23,10 @@ class StreamingTextResponse extends Response {
   }
 }
 
-// Keep a singleton client instance
-let client: Client | null = null;
-let transport: StdioClientTransport | null = null;
-let isConnected = false;
-
-// Fake tool for getting weather
-function getWeather(location: string): string {
-  const weatherConditions = [
-    "sunny",
-    "partly cloudy",
-    "cloudy",
-    "rainy",
-    "stormy",
-    "snowy",
-    "foggy",
-  ];
-  const temperatures = {
-    "New York": { min: 40, max: 85 },
-    "San Francisco": { min: 50, max: 75 },
-    Chicago: { min: 30, max: 80 },
-    Miami: { min: 65, max: 95 },
-    Seattle: { min: 40, max: 75 },
-    default: { min: 35, max: 85 },
-  };
-
-  // Get temperature range based on location or use default
-  const tempRange =
-    temperatures[location as keyof typeof temperatures] || temperatures.default;
-
-  // Generate a random temperature within the range
-  const temperature =
-    Math.floor(Math.random() * (tempRange.max - tempRange.min + 1)) +
-    tempRange.min;
-
-  // Select a random weather condition
-  const condition =
-    weatherConditions[Math.floor(Math.random() * weatherConditions.length)];
-
-  return `The current weather in ${location} is ${condition} with a temperature of ${temperature}°F.`;
-}
-
-// Initialize and get the MCP client
-async function getClient(): Promise<Client> {
-  if (client && isConnected) {
-    return client;
-  }
-
-  try {
-    client = new Client(
-      {
-        name: "content-creator-client",
-        version: "1.0.0",
-      },
-      {
-        capabilities: {},
-      }
-    );
-
-    transport = new StdioClientTransport({
-      command: "node",
-      args: ["../server/dist/index.js"],
-    });
-
-    await client.connect(transport);
-    isConnected = true;
-
-    return client;
-  } catch (error) {
-    console.error("Error connecting to MCP server:", error);
-    isConnected = false;
-    throw new Error(`Failed to connect to MCP server: ${error}`);
-  }
-}
+// Initialize OpenAI client
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 // Function to stream content to the client
 export async function POST(req: NextRequest) {
@@ -96,150 +35,293 @@ export async function POST(req: NextRequest) {
     const reqBody = await req.json();
     const { messages, promptName, promptArgs, tool, resources = [] } = reqBody;
 
-    // Handle tool calls
-    if (tool === "weather") {
-      const location = promptArgs?.location || "default";
-      const weatherInfo = getWeather(location);
+    // Handle tool calls through MCP
+    if (tool) {
+      try {
+        console.log(
+          `Executing tool via MCP: ${tool} with args:`,
+          promptArgs || {}
+        );
 
-      // Stream the weather information
-      const encoder = new TextEncoder();
-      const stream = new ReadableStream({
-        async start(controller) {
-          const chunks = weatherInfo.split(" ");
+        // Get MCPClient instance
+        const mcpClient = MCPClient.getInstance();
 
-          for (const chunk of chunks) {
-            controller.enqueue(encoder.encode(chunk + " "));
-            await new Promise((resolve) => setTimeout(resolve, 50));
+        // Ensure client is connected
+        await mcpClient.connect();
+
+        // Execute the tool using our MCPClient wrapper
+        const result = await mcpClient.executeTool(tool, promptArgs || {});
+        console.log(`Tool execution result:`, result);
+
+        // Extract response from MCP tool execution
+        let toolResponse = "Tool execution failed or returned no content";
+
+        // Process the result based on its structure
+        if (result) {
+          if (result.content && Array.isArray(result.content)) {
+            // Handle content array from MCP tool call
+            const textContent = result.content
+              .filter((item: any) => item.type === "text")
+              .map((item: any) => item.text)
+              .join("\n");
+
+            if (textContent) {
+              toolResponse = textContent;
+            }
+          } else if (result.toolResult) {
+            // Handle toolResult format
+            if (typeof result.toolResult === "string") {
+              toolResponse = result.toolResult;
+            } else {
+              toolResponse = JSON.stringify(result.toolResult, null, 2);
+            }
           }
+        }
 
-          controller.close();
-        },
-      });
+        console.log(`Final tool response:`, toolResponse);
 
-      return new StreamingTextResponse(stream);
+        // Stream the tool response
+        const encoder = new TextEncoder();
+        const stream = new ReadableStream({
+          async start(controller) {
+            // For better user experience, stream word by word
+            const chunks = toolResponse.split(" ");
+
+            for (const chunk of chunks) {
+              controller.enqueue(encoder.encode(chunk + " "));
+              await new Promise((resolve) => setTimeout(resolve, 20)); // Slightly faster pace
+            }
+
+            controller.close();
+          },
+        });
+
+        return new StreamingTextResponse(stream);
+      } catch (error) {
+        console.error(`Error executing tool ${tool}:`, error);
+
+        // Return error as stream
+        const encoder = new TextEncoder();
+        const errorMsg = `Error executing tool ${tool}: ${
+          error instanceof Error ? error.message : String(error)
+        }`;
+
+        const stream = new ReadableStream({
+          async start(controller) {
+            controller.enqueue(encoder.encode(errorMsg));
+            controller.close();
+          },
+        });
+
+        return new StreamingTextResponse(stream);
+      }
     }
 
     // If we have a specific prompt name, use that
     if (promptName) {
-      const mcpClient = await getClient();
-      const result = await mcpClient.getPrompt({
-        name: promptName,
-        arguments: promptArgs || {},
-      });
+      try {
+        // Get MCPClient instance
+        const mcpClient = MCPClient.getInstance();
 
-      // Extract the user message from the prompt
-      let promptText = "No prompt content found";
+        // Ensure client is connected
+        await mcpClient.connect();
 
-      if (result.messages && result.messages.length > 0) {
-        const userMessage = result.messages.find((msg) => msg.role === "user");
-        if (
-          userMessage &&
-          userMessage.content &&
-          typeof userMessage.content === "object" &&
-          "type" in userMessage.content &&
-          userMessage.content.type === "text" &&
-          "text" in userMessage.content
-        ) {
-          promptText = userMessage.content.text || "";
+        // Get the prompt result through our MCPClient wrapper
+        const promptResult = await mcpClient.executePrompt(
+          promptName,
+          promptArgs || {}
+        );
+        console.log(`Got MCP prompt result for ${promptName}:`, promptResult);
+
+        // Create a proper system message
+        const systemMessage = {
+          role: "system" as Role,
+          content: `You are a helpful assistant. Use the following information from the '${promptName}' prompt to assist the user: ${promptResult}`,
+        };
+
+        // Add the user message for context if available
+        let promptMessages = [systemMessage];
+        if (messages && messages.length > 0) {
+          const userMessage = messages[messages.length - 1];
+          promptMessages.push({
+            role: "user" as Role,
+            content: userMessage.content,
+          });
+        } else {
+          // If no user message provided, add a generic one
+          promptMessages.push({
+            role: "user" as Role,
+            content: `Please help me with information from the ${promptName} prompt.`,
+          });
         }
+
+        // Make the OpenAI API call with streaming
+        const stream = await openai.chat.completions.create({
+          model: "gpt-4o-mini", // Using a more capable model for better results
+          messages: promptMessages,
+          stream: true,
+          temperature: 0.7,
+          max_tokens: 800,
+        });
+
+        // Handle streaming from OpenAI's API
+        const readableStream = new ReadableStream({
+          async start(controller) {
+            const encoder = new TextEncoder();
+            // Process each chunk as it arrives
+            for await (const chunk of stream) {
+              const content = chunk.choices[0]?.delta?.content || "";
+              if (content) {
+                controller.enqueue(encoder.encode(content));
+              }
+            }
+            controller.close();
+          },
+        });
+
+        // Return the streaming response
+        return new StreamingTextResponse(readableStream);
+      } catch (error) {
+        console.error("Error processing prompt:", error);
+
+        // Fallback error handling
+        const encoder = new TextEncoder();
+        const errorMessage = `Error processing prompt: ${
+          error instanceof Error ? error.message : String(error)
+        }`;
+        const stream = new ReadableStream({
+          async start(controller) {
+            controller.enqueue(encoder.encode(errorMessage));
+            controller.close();
+          },
+        });
+
+        return new StreamingTextResponse(stream);
       }
-
-      // Simulate streaming with a simple text encoder
-      const encoder = new TextEncoder();
-      const stream = new ReadableStream({
-        async start(controller) {
-          // Split the text into chunks for more realistic streaming
-          const chunks = promptText.split(" ");
-
-          for (const chunk of chunks) {
-            controller.enqueue(encoder.encode(chunk + " "));
-            // Add a small delay for more realistic streaming
-            await new Promise((resolve) => setTimeout(resolve, 20));
-          }
-
-          controller.close();
-        },
-      });
-
-      return new StreamingTextResponse(stream);
     }
     // For regular chat messages
     else if (messages && messages.length > 0) {
-      // Get the last user message
-      const lastMessage = messages[messages.length - 1];
+      // Create a system message for guidance
+      const systemMessage = {
+        role: "system",
+        content:
+          "You are a helpful AI assistant specializing in content creation and marketing. Help the user with their questions, resource analysis, and content needs. Be concise, helpful and professional.",
+      };
 
-      // Generate a meaningful response based on the message content
-      let responseText = "";
+      // Prepare messages for OpenAI
+      let openaiMessages = [systemMessage];
 
-      if (
-        lastMessage.content.toLowerCase().includes("hello") ||
-        lastMessage.content.toLowerCase().includes("hi")
-      ) {
-        responseText = "Hello! How can I help you today?";
-      } else if (lastMessage.content.toLowerCase().includes("help")) {
-        responseText =
-          "I'm here to help! You can use commands like /content-idea or /weather, or mention resources with @. What would you like assistance with?";
-      } else if (resources && resources.length > 0) {
-        // If there are resources, generate a response about them
-        responseText = `I see you've referenced some resources. Let me analyze those for you. Here's what I found:\n\n${resources
-          .map(
-            (r: { name: string; content: string }) =>
-              `Based on "${r.name}", I can tell you that ${r.content.substring(
-                0,
-                100
-              )}...`
-          )
-          .join("\n\n")}`;
-      } else {
-        // Generate a more intelligent response based on content
-        const topics = [
-          "writing",
-          "content",
-          "blog",
-          "post",
-          "article",
-          "social",
-          "media",
-          "marketing",
-          "seo",
-          "headline",
-        ];
+      // Add all messages from conversation history
+      const conversationMessages = messages.map(
+        (msg: { role: string; content: string }) => ({
+          role: msg.role === "user" ? "user" : "assistant",
+          content: msg.content,
+        })
+      ) as ChatMessage[];
 
-        const foundTopics = topics.filter((topic) =>
-          lastMessage.content.toLowerCase().includes(topic)
-        );
+      openaiMessages = [...openaiMessages, ...conversationMessages];
 
-        if (foundTopics.length > 0) {
-          responseText = `I see you're interested in ${foundTopics.join(
-            ", "
-          )}. I can help you create better content with our specialized tools. Try using /content-idea or /headline-generator for more targeted assistance!`;
-        } else {
-          // Fallback to a more generic helpful response
-          responseText = `I understand you're looking for help with "${lastMessage.content}". I can assist with content creation, rewriting, and generating ideas. What specific aspect would you like help with?`;
-        }
+      // Add context about resources if any are referenced
+      if (resources && resources.length > 0) {
+        const resourcesContext = {
+          role: "system" as const,
+          content: `The user has referenced the following resources in their latest message: ${resources
+            .map(
+              (r: { name: string; content: string }) =>
+                `${r.name}: ${r.content.substring(0, 200)}...`
+            )
+            .join(
+              "\n\n"
+            )}\n\nPlease analyze these resources and provide insights.`,
+        };
+        openaiMessages.push(resourcesContext);
       }
 
-      // Simulate streaming with a simple text encoder
-      const encoder = new TextEncoder();
-      const stream = new ReadableStream({
-        async start(controller) {
-          // Split the text into chunks for more realistic streaming
-          const chunks = responseText.split(" ");
+      try {
+        // Make the OpenAI API call with streaming
+        const stream = await openai.chat.completions.create({
+          model: "gpt-4o-mini",
+          messages: openaiMessages as any, // Type assertion to satisfy TypeScript
+          stream: true,
+          temperature: 0.7,
+          max_tokens: 800,
+        });
 
-          for (const chunk of chunks) {
-            controller.enqueue(encoder.encode(chunk + " "));
-            // Add a small delay for more realistic streaming
-            await new Promise((resolve) => setTimeout(resolve, 20));
+        // Create a TransformStream to handle the chunks
+        const encoder = new TextEncoder();
+        const decoder = new TextDecoder();
+        let counter = 0;
+
+        const transformStream = new TransformStream({
+          async transform(chunk, controller) {
+            counter++;
+
+            // OpenAI might send empty chunks - skip them
+            if (chunk === undefined) {
+              return;
+            }
+
+            const text =
+              typeof chunk === "string" ? chunk : decoder.decode(chunk);
+            controller.enqueue(encoder.encode(text));
+          },
+        });
+
+        // Handle streaming from OpenAI's API
+        const readableStream = new ReadableStream({
+          async start(controller) {
+            // Process each chunk as it arrives
+            for await (const chunk of stream) {
+              const content = chunk.choices[0]?.delta?.content || "";
+              if (content) {
+                controller.enqueue(encoder.encode(content));
+              }
+            }
+            controller.close();
+          },
+        });
+
+        // Return the streaming response
+        return new StreamingTextResponse(readableStream);
+      } catch (error: unknown) {
+        console.error("Error calling OpenAI:", error);
+
+        // Fallback in case of API errors
+        let responseText =
+          "I'm sorry, I encountered an error processing your request. Please try again.";
+
+        // Check if it's an API key or rate limit issue
+        if (error instanceof Error) {
+          const apiError = error as any;
+          if (apiError.status === 401) {
+            responseText =
+              "API key error: Please check your OpenAI API key configuration.";
+          } else if (apiError.status === 429) {
+            responseText =
+              "Rate limit exceeded: The system is currently experiencing high demand. Please try again later.";
           }
+        }
 
-          controller.close();
-        },
-      });
+        // Stream the error message
+        const encoder = new TextEncoder();
+        const stream = new ReadableStream({
+          async start(controller) {
+            const chunks = responseText.split(" ");
 
-      return new StreamingTextResponse(stream);
+            for (const chunk of chunks) {
+              controller.enqueue(encoder.encode(chunk + " "));
+              await new Promise((resolve) => setTimeout(resolve, 20));
+            }
+
+            controller.close();
+          },
+        });
+
+        return new StreamingTextResponse(stream);
+      }
     }
 
-    return new Response("No valid input provided", { status: 400 });
+    return new Response("Invalid request", { status: 400 });
   } catch (error) {
     console.error("Error in AI API route:", error);
     return new Response(`Error: ${error}`, { status: 500 });

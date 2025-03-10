@@ -23,6 +23,7 @@
     "lucide-react": "^0.479.0",
     "nanoid": "^5.1.3",
     "next": "15.2.1",
+    "openai": "^4.86.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-markdown": "^10.1.0",

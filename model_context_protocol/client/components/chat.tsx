@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { nanoid } from "nanoid";
 import ReactMarkdown from "react-markdown";
 import { Send, X, Cloud } from "lucide-react";
@@ -23,6 +23,8 @@ import {
   getResources,
   executePrompt,
   getResourceContent,
+  refreshResources,
+  refreshPrompts,
 } from "../app/actions";
 import {
   ChatMessage,
@@ -229,12 +231,177 @@ export function Chat() {
         setIsConnecting(true);
         const connected = await connect();
         setIsConnected(connected);
+
         if (connected) {
-          const resourcesList = await getResources();
-          console.log("Resources loaded from server:", resourcesList);
-          const promptsList = await getPrompts();
-          setResources(resourcesList);
-          setPrompts(promptsList);
+          try {
+            // Directly refresh resources to ensure we get the latest
+            const resourcesList = await refreshResources();
+            console.log("Resources refreshed from server:", resourcesList);
+
+            if (resourcesList && resourcesList.length > 0) {
+              setResources(resourcesList);
+            } else {
+              console.warn(
+                "No resources returned from server, adding mock resources for testing"
+              );
+              // Add mock resources for testing if no real resources are returned
+              const mockResources = [
+                {
+                  uri: "content://blog-example",
+                  name: "Blog Post Example",
+                  description: "A sample blog post about productivity",
+                  mimeType: "text/markdown",
+                },
+                {
+                  uri: "content://social-post",
+                  name: "Social Media Post",
+                  description: "A LinkedIn post about leadership",
+                  mimeType: "text/plain",
+                },
+                {
+                  uri: "content://email-template",
+                  name: "Email Template",
+                  description: "A follow-up email template after a meeting",
+                  mimeType: "text/plain",
+                },
+              ];
+              setResources(mockResources);
+            }
+
+            // Refresh prompts and ensure we get the latest
+            const promptsList = await refreshPrompts();
+            console.log("Prompts refreshed from server:", promptsList);
+
+            if (promptsList && promptsList.length > 0) {
+              setPrompts(promptsList);
+            } else {
+              console.warn(
+                "No prompts returned from server, adding mock prompts for testing"
+              );
+              // Add mock prompts for testing if no real prompts are returned
+              const mockPrompts = [
+                {
+                  name: "content-idea",
+                  description: "Generate content ideas for your topic",
+                  arguments: [
+                    {
+                      name: "topic",
+                      description: "The topic to generate ideas for",
+                      required: true,
+                    },
+                  ],
+                },
+                {
+                  name: "headline-generator",
+                  description: "Create catchy headlines for your content",
+                  arguments: [
+                    {
+                      name: "topic",
+                      description: "The topic of your content",
+                      required: true,
+                    },
+                    {
+                      name: "tone",
+                      description:
+                        "The tone of the headlines (professional, casual, etc.)",
+                      required: false,
+                    },
+                  ],
+                },
+                {
+                  name: "rewrite-content",
+                  description:
+                    "Rewrite content to improve clarity and engagement",
+                  arguments: [
+                    {
+                      name: "content",
+                      description: "The content to rewrite",
+                      required: true,
+                    },
+                    {
+                      name: "tone",
+                      description: "The desired tone",
+                      required: false,
+                    },
+                  ],
+                },
+              ];
+              setPrompts(mockPrompts);
+            }
+          } catch (error) {
+            console.error("Error loading resources or prompts:", error);
+            // Add mock data in case of error
+            const mockResources = [
+              {
+                uri: "content://blog-example",
+                name: "Blog Post Example",
+                description: "A sample blog post about productivity",
+                mimeType: "text/markdown",
+              },
+              {
+                uri: "content://social-post",
+                name: "Social Media Post",
+                description: "A LinkedIn post about leadership",
+                mimeType: "text/plain",
+              },
+              {
+                uri: "content://email-template",
+                name: "Email Template",
+                description: "A follow-up email template after a meeting",
+                mimeType: "text/plain",
+              },
+            ];
+            setResources(mockResources);
+
+            const mockPrompts = [
+              {
+                name: "content-idea",
+                description: "Generate content ideas for your topic",
+                arguments: [
+                  {
+                    name: "topic",
+                    description: "The topic to generate ideas for",
+                    required: true,
+                  },
+                ],
+              },
+              {
+                name: "headline-generator",
+                description: "Create catchy headlines for your content",
+                arguments: [
+                  {
+                    name: "topic",
+                    description: "The topic of your content",
+                    required: true,
+                  },
+                  {
+                    name: "tone",
+                    description:
+                      "The tone of the headlines (professional, casual, etc.)",
+                    required: false,
+                  },
+                ],
+              },
+              {
+                name: "rewrite-content",
+                description:
+                  "Rewrite content to improve clarity and engagement",
+                arguments: [
+                  {
+                    name: "content",
+                    description: "The content to rewrite",
+                    required: true,
+                  },
+                  {
+                    name: "tone",
+                    description: "The desired tone",
+                    required: false,
+                  },
+                ],
+              },
+            ];
+            setPrompts(mockPrompts);
+          }
         } else {
           setError("Failed to connect to MCP server");
         }
@@ -279,58 +446,116 @@ export function Chat() {
     setInputValue(value);
     setAiInput(value); // Update the AI SDK input as well
 
-    // Extract search term after / or @
-    let newSearchTerm = "";
+    // Check for slash commands
     if (value.includes("/")) {
-      const parts = value.split("/");
-      if (parts.length > 1) {
-        newSearchTerm = parts[parts.length - 1].trim();
-      }
-    } else if (value.includes("@")) {
-      const parts = value.split("@");
-      if (parts.length > 1) {
-        newSearchTerm = parts[parts.length - 1].trim();
+      // Check if the command is complete (followed by a space with no additional slashes)
+      const matches = value.match(/\/([A-Za-z\-]+)\s/g);
 
-        // Auto-replace full resource names when typed manually
-        const lastPartText = parts[parts.length - 1].trim();
-        const matchingResource = resources.find(
-          (resource) =>
-            resource.name.toLowerCase() === lastPartText.toLowerCase()
-        );
+      if (
+        matches &&
+        matches.length > 0 &&
+        !value.includes("/", value.indexOf(matches[0]) + matches[0].length)
+      ) {
+        // If a complete command is found (with trailing space), close the command menu
+        console.log("Complete command found:", matches);
+        if (isCommandOpen) {
+          setIsCommandOpen(false);
+          setSearchTerm("");
+        }
+      } else {
+        // Open or keep command menu open when a slash is present
+        if (!isCommandOpen) {
+          setIsCommandOpen(true);
+          setIsResourceOpen(false);
+        }
 
-        if (matchingResource && textareaRef.current) {
-          // If a full resource name is typed after @, replace it properly
-          const lastAtIndex = value.lastIndexOf("@");
-          if (lastAtIndex !== -1) {
-            const newValue =
-              value.substring(0, lastAtIndex + 1) + matchingResource.name + " ";
-
-            // We need to do this outside the current event handler to avoid React state conflicts
-            setTimeout(() => {
-              setInputValue(newValue);
-              if (textareaRef.current) {
-                textareaRef.current.value = newValue;
-                textareaRef.current.selectionStart = newValue.length;
-                textareaRef.current.selectionEnd = newValue.length;
-              }
-            }, 0);
+        // Extract search term after the last slash for filtering
+        const lastSlashIndex = value.lastIndexOf("/");
+        if (lastSlashIndex !== -1) {
+          // When the user types exactly "/", we want to show all commands
+          if (
+            lastSlashIndex === value.length - 1 ||
+            value.substring(lastSlashIndex + 1).trim() === ""
+          ) {
+            console.log("Setting empty search term for /");
+            // Set empty search term to show all available commands immediately
+            setSearchTerm("");
+          } else {
+            // Only filter when there's at least one character after the slash
+            const afterSlash = value.substring(lastSlashIndex + 1).trim();
+            console.log("Slash search term:", afterSlash);
+            setSearchTerm(afterSlash);
           }
         }
       }
     }
-    setSearchTerm(newSearchTerm);
+    // Check for resource references
+    else if (value.includes("@")) {
+      // Check if the resource reference is complete (followed by a space)
+      const matches = value.match(/@([A-Za-z\s]+)\s/g);
 
-    // Open command menu on "/"
-    if (value.endsWith("/") && !isCommandOpen) {
-      setIsCommandOpen(true);
-      setIsResourceOpen(false);
-      setSearchTerm("");
+      if (matches && matches.length > 0) {
+        // If a complete resource reference is found (with trailing space), close the resource menu
+        console.log("Complete resource reference found:", matches);
+        if (isResourceOpen) {
+          setIsResourceOpen(false);
+          setSearchTerm("");
+        }
+      } else {
+        // Open or keep resource menu open when @ is present and no complete reference is found
+        if (!isResourceOpen) {
+          setIsResourceOpen(true);
+          setIsCommandOpen(false);
+        }
+
+        // Extract search term after the last @ for filtering
+        const lastAtIndex = value.lastIndexOf("@");
+        if (lastAtIndex !== -1) {
+          // When the user types exactly "@", we want to show all resources
+          if (lastAtIndex === value.length - 1) {
+            console.log("Setting empty search term for @");
+            setSearchTerm("");
+          } else {
+            // Otherwise, use the text after @ as search term
+            const afterAt = value.substring(lastAtIndex + 1).trim();
+            console.log("@ search term:", afterAt);
+            setSearchTerm(afterAt);
+
+            // Auto-replace full resource names when typed manually
+            const matchingResource = resources.find(
+              (resource) =>
+                resource.name.toLowerCase() === afterAt.toLowerCase()
+            );
+
+            if (matchingResource && textareaRef.current) {
+              // If a full resource name is typed after @, replace it properly
+              // We need to do this outside the current event handler to avoid React state conflicts
+              setTimeout(() => {
+                const newValue =
+                  value.substring(0, lastAtIndex + 1) +
+                  matchingResource.name +
+                  " ";
+
+                setInputValue(newValue);
+                if (textareaRef.current) {
+                  textareaRef.current.value = newValue;
+                  textareaRef.current.selectionStart = newValue.length;
+                  textareaRef.current.selectionEnd = newValue.length;
+                }
+
+                // Close the resource menu as we've completed the reference
+                setIsResourceOpen(false);
+                setSearchTerm("");
+              }, 0);
+            }
+          }
+        }
+      }
     }
-
-    // Open resource command bar on "@"
-    if (value.endsWith("@") && !isResourceOpen) {
-      setIsResourceOpen(true);
-      setIsCommandOpen(false);
+    // If neither slash nor @ is present, close both menus
+    else {
+      if (isCommandOpen) setIsCommandOpen(false);
+      if (isResourceOpen) setIsResourceOpen(false);
       setSearchTerm("");
     }
   };
@@ -351,29 +576,53 @@ export function Chat() {
   const handleSendMessage = async () => {
     if (!inputValue.trim() || !isConnected) return;
 
+    // Check for slash commands (/command) in the input
+    const slashCommandMatch = inputValue.match(/^\/(\w+)(-\w+)*/);
+
     // Handle special commands first
-    if (inputValue.startsWith("/expand")) {
-      // Extract content after /expand
-      const content = inputValue.replace("/expand", "").trim();
-      if (content) {
-        setExpanderContent(content);
-        setShowExpander(true);
+    if (slashCommandMatch) {
+      const commandName = slashCommandMatch[0];
+
+      // Handle expand command
+      if (commandName.startsWith("/expand")) {
+        // Extract content after /expand
+        const content = inputValue.replace("/expand", "").trim();
+        if (content) {
+          setExpanderContent(content);
+          setShowExpander(true);
+          setInputValue("");
+          setAiInput("");
+          return;
+        }
+      }
+
+      // Handle weather tool command
+      else if (commandName.startsWith("/weather")) {
+        setShowWeatherTool(true);
         setInputValue("");
         setAiInput("");
         return;
       }
-    }
 
-    // Handle weather tool command
-    if (inputValue.startsWith("/weather")) {
-      setShowWeatherTool(true);
-      setInputValue("");
-      setAiInput("");
-      return;
+      // Check if it's a recognized prompt command from our list
+      const matchedPrompt = prompts.find(
+        (p) =>
+          commandName === `/${p.name}` || commandName.startsWith(`/${p.name}-`)
+      );
+
+      if (matchedPrompt) {
+        // If it's a recognized prompt, open the prompt form
+        setActivePrompt(matchedPrompt);
+        setInputValue("");
+        setAiInput("");
+        return;
+      }
+
+      // If we reach here, it's an unrecognized slash command, but we'll
+      // still send it through to the API for further handling
     }
 
     // Check for resource references (@resource)
-    // First, find all complete resource references
     const resourceReferences: string[] = [];
 
     // Log available resources for debugging
@@ -383,24 +632,81 @@ export function Chat() {
       console.warn(
         "No resources available in the UI. Resource references will not work."
       );
+
+      // Add a fallback message
+      const userMsg = {
+        id: nanoid(),
+        role: "user" as const,
+        content: inputValue,
+      };
+
+      setMessages([...messages, userMsg]);
+
+      const assistantMsg = {
+        id: nanoid(),
+        role: "assistant" as const,
+        content:
+          "I see you're trying to reference resources, but no resources are available. Try typing '@' to see available resources.",
+      };
+
+      setMessages((prev) => [...prev, assistantMsg]);
+      setInputValue("");
+      setAiInput("");
+      return;
     }
 
-    // Try to match each resource name exactly
+    // Try to match resource references in the input
+    let hasResourceReference = false;
+
+    // Check for @ResourceName pattern in the input
     for (const resource of resources) {
       try {
-        // Escape special characters in resource name for regex safety
+        // First try exact match with escaped name
         const escapedName = resource.name.replace(
           /[.*+?^${}()|[\]\\]/g,
           "\\$&"
         );
-        const resourcePattern = new RegExp(`@${escapedName}\\b`, "g");
-        const matches = [...inputValue.matchAll(resourcePattern)];
 
-        if (matches.length > 0) {
+        // Try matching the full resource name (exact match with word boundary)
+        const exactPattern = new RegExp(`@${escapedName}\\b`, "g");
+        const exactMatches = [...inputValue.matchAll(exactPattern)];
+
+        if (exactMatches.length > 0) {
           console.log(
-            `Found match for resource: ${resource.name} with URI: ${resource.uri}`
+            `Found exact match for resource: ${resource.name} with URI: ${resource.uri}`
           );
           resourceReferences.push(`@${resource.name}`);
+          hasResourceReference = true;
+          continue;
+        }
+
+        // For resource names with spaces, try matching the exact quoted name
+        if (resource.name.includes(" ")) {
+          const exactQuotedPattern = new RegExp(`@"${escapedName}"`, "g");
+          const exactQuotedMatches = [
+            ...inputValue.matchAll(exactQuotedPattern),
+          ];
+
+          if (exactQuotedMatches.length > 0) {
+            console.log(
+              `Found exact quoted match for resource: ${resource.name} with URI: ${resource.uri}`
+            );
+            resourceReferences.push(`@${resource.name}`);
+            hasResourceReference = true;
+            continue;
+          }
+        }
+
+        // If no exact match, try case-insensitive match
+        const caseInsensitivePattern = new RegExp(`@${escapedName}\\b`, "gi");
+        const fuzzyMatches = [...inputValue.matchAll(caseInsensitivePattern)];
+
+        if (fuzzyMatches.length > 0) {
+          console.log(
+            `Found case-insensitive match for resource: ${resource.name} with URI: ${resource.uri}`
+          );
+          resourceReferences.push(`@${resource.name}`);
+          hasResourceReference = true;
         }
       } catch (error) {
         console.error(`Error matching resource ${resource.name}:`, error);
@@ -410,7 +716,7 @@ export function Chat() {
     console.log("Detected resource references:", resourceReferences);
 
     // If we found resources, handle them
-    if (resourceReferences.length > 0) {
+    if (hasResourceReference && resourceReferences.length > 0) {
       // Add user message
       const userMsg = {
         id: nanoid(),
@@ -418,7 +724,9 @@ export function Chat() {
         content: inputValue,
       };
 
-      setMessages([...messages, userMsg]);
+      // Update local messages with the new user message
+      const updatedMessages = [...messages, userMsg];
+      setMessages(updatedMessages);
       setInputValue("");
       setAiInput("");
 
@@ -429,7 +737,7 @@ export function Chat() {
         {
           id: assistantMessageId,
           role: "assistant",
-          content: "Processing your request...",
+          content: "Processing your request with resources...",
           isLoading: true,
         },
       ]);
@@ -438,14 +746,18 @@ export function Chat() {
         const fetchedRefs: ResourceReference[] = [];
 
         // Get fresh resources to ensure we have the latest
+        let currentResources = resources;
         try {
           console.log("Refreshing resources before processing references...");
-          const freshResources = await getResources();
-          if (freshResources.length > 0) {
+          const freshResources = await refreshResources();
+          if (freshResources && freshResources.length > 0) {
             console.log("Got fresh resources:", freshResources);
             setResources(freshResources);
+            currentResources = freshResources;
           } else {
-            console.warn("Refresh returned empty resources");
+            console.warn(
+              "Refresh returned empty resources, using existing resources"
+            );
           }
         } catch (refreshError) {
           console.error("Error refreshing resources:", refreshError);
@@ -453,11 +765,27 @@ export function Chat() {
 
         for (const ref of resourceReferences) {
           // Remove the @ symbol and find the matching resource
-          const resourceName = ref.substring(1);
+          let resourceName = ref.substring(1);
+
+          // Handle quoted resource names
+          if (resourceName.startsWith('"') && resourceName.endsWith('"')) {
+            resourceName = resourceName.substring(1, resourceName.length - 1);
+          }
+
           console.log(`Looking for resource with name: "${resourceName}"`);
 
-          const matchingResource = resources.find(
-            (r) => r.name === resourceName
+          // Try more flexible matching
+          const matchingResource = currentResources.find(
+            (r) =>
+              r.name === resourceName ||
+              r.name.toLowerCase() === resourceName.toLowerCase() ||
+              // For multi-word resources, try partial matching
+              (r.name.includes(" ") &&
+                resourceName
+                  .split(" ")
+                  .every((part) =>
+                    r.name.toLowerCase().includes(part.toLowerCase())
+                  ))
           );
 
           if (matchingResource) {
@@ -485,14 +813,14 @@ export function Chat() {
         }
 
         if (fetchedRefs.length > 0) {
-          // Send the content to the AI API with the fetched resources
+          // Send the content to the AI API with the fetched resources and entire message history
           fetch("/api/ai", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              messages: [userMsg],
+              messages: updatedMessages, // Send all messages, not just the current one
               resources: fetchedRefs,
             }),
           })
@@ -516,8 +844,8 @@ export function Chat() {
                   msg.id === assistantMessageId
                     ? {
                         ...msg,
-                        content: "Processing...",
-                        isLoading: true,
+                        content: receivedText,
+                        isLoading: false,
                       }
                     : msg
                 )
@@ -656,19 +984,22 @@ export function Chat() {
         content: inputValue,
       };
 
+      // Update messages with the new user message
+      const updatedMessages = [...messages, userMsg];
+
       // Use AI SDK to stream the response
       appendAiMessage(userMsg);
       setInputValue("");
       setAiInput("");
 
-      // Call our API endpoint with the prompt info
+      // Call our API endpoint with the prompt info and full message history
       fetch("/api/ai", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          messages: [userMsg],
+          messages: updatedMessages, // Send all messages, not just current one
           promptName: promptName,
           promptArgs: args,
         }),
@@ -688,7 +1019,9 @@ export function Chat() {
       content: inputValue,
     };
 
-    setMessages([...messages, userMsg]);
+    // Update local messages state with the new user message
+    const updatedMessages = [...messages, userMsg];
+    setMessages(updatedMessages);
 
     // Add assistant "thinking" message
     const assistantMessageId = nanoid();
@@ -702,14 +1035,14 @@ export function Chat() {
       },
     ]);
 
-    // Call the API with streaming
+    // Call the API with streaming, passing the ENTIRE conversation history
     fetch("/api/ai", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        messages: [userMsg],
+        messages: updatedMessages, // Send all messages, not just the current one
       }),
     })
       .then((response) => {
@@ -900,40 +1233,128 @@ export function Chat() {
     // Clear the active prompt form
     setActivePrompt(null);
 
-    // Create the command message
-    let commandText = `/${name}`;
-
-    // Add arguments to the command text
-    Object.entries(args).forEach(([key, value]) => {
-      if (value) {
-        commandText += ` ${key}="${value}"`;
-      }
-    });
-
-    // Create message for AI SDK
+    // Create a user message to show in the chat
     const userMsg = {
       id: nanoid(),
       role: "user" as const,
-      content: commandText,
+      content: `Running prompt: ${name} with args: ${Object.entries(args)
+        .map(([key, value]) => `${key}="${value}"`)
+        .join(", ")}`,
     };
 
-    // Use AI SDK to stream the response
-    appendAiMessage(userMsg);
-
-    // Call our API endpoint with the prompt info
-    fetch("/api/ai", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    // Add a temporary "thinking" message from the assistant
+    const assistantMsgId = nanoid();
+    setMessages([
+      ...messages,
+      userMsg,
+      {
+        id: assistantMsgId,
+        role: "assistant",
+        content: "Processing your request...",
+        isLoading: true,
       },
-      body: JSON.stringify({
-        messages: [userMsg],
-        promptName: name,
-        promptArgs: args,
-      }),
-    }).catch((error) => {
+    ]);
+
+    try {
+      // Call our API endpoint with the prompt info
+      const response = await fetch("/api/ai", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages: [userMsg],
+          promptName: name,
+          promptArgs: args,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Process the streaming response
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let receivedText = "";
+
+      if (!reader) {
+        throw new Error("Response body is not readable");
+      }
+
+      // Function to read the stream chunks
+      const readChunk = async () => {
+        try {
+          const { done, value } = await reader.read();
+
+          if (done) {
+            // Streaming complete, update the final message
+            setMessages((prevMessages) =>
+              prevMessages.map((msg) =>
+                msg.id === assistantMsgId
+                  ? {
+                      ...msg,
+                      content: receivedText,
+                      isLoading: false,
+                    }
+                  : msg
+              )
+            );
+            return;
+          }
+
+          // Decode the chunk and add to our text
+          const chunkText = decoder.decode(value, { stream: true });
+          receivedText += chunkText;
+
+          // Update the message with the current received text
+          setMessages((prevMessages) =>
+            prevMessages.map((msg) =>
+              msg.id === assistantMsgId
+                ? {
+                    ...msg,
+                    content: receivedText,
+                    isLoading: true,
+                  }
+                : msg
+            )
+          );
+
+          // Continue reading
+          await readChunk();
+        } catch (error) {
+          console.error("Error reading stream:", error);
+          setMessages((prevMessages) =>
+            prevMessages.map((msg) =>
+              msg.id === assistantMsgId
+                ? {
+                    ...msg,
+                    content: `Error processing response: ${error}`,
+                    isLoading: false,
+                  }
+                : msg
+            )
+          );
+        }
+      };
+
+      // Start reading the stream
+      await readChunk();
+    } catch (error) {
       console.error("Error calling AI API:", error);
-    });
+      // Update message with error
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) =>
+          msg.id === assistantMsgId
+            ? {
+                ...msg,
+                content: `Error processing request: ${error}`,
+                isLoading: false,
+              }
+            : msg
+        )
+      );
+    }
   };
 
   // Function to cancel the prompt form
@@ -945,17 +1366,27 @@ export function Chat() {
   const handleWeatherToolSubmit = (location: string) => {
     setShowWeatherTool(false);
 
-    // Create message for AI SDK
+    // Create user message
     const userMsg = {
       id: nanoid(),
       role: "user" as const,
-      content: `What's the weather in ${location}?`,
+      content: `Getting weather for: ${location}`,
     };
 
-    // Use AI SDK to stream the response
-    appendAiMessage(userMsg);
+    // Add a temporary "thinking" message from the assistant
+    const assistantMsgId = nanoid();
+    setMessages([
+      ...messages,
+      userMsg,
+      {
+        id: assistantMsgId,
+        role: "assistant",
+        content: "Fetching weather data...",
+        isLoading: true,
+      },
+    ]);
 
-    // Call our API endpoint with the weather tool request
+    // Call our API endpoint with the weather tool info
     fetch("/api/ai", {
       method: "POST",
       headers: {
@@ -966,9 +1397,95 @@ export function Chat() {
         tool: "weather",
         promptArgs: { location },
       }),
-    }).catch((error) => {
-      console.error("Error calling AI API:", error);
-    });
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        // Process the streaming response
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
+        let receivedText = "";
+
+        if (!reader) {
+          throw new Error("Response body is not readable");
+        }
+
+        // Function to read the stream chunks
+        const readChunk = async () => {
+          try {
+            const { done, value } = await reader.read();
+
+            if (done) {
+              // Streaming complete, update the final message
+              setMessages((prevMessages) =>
+                prevMessages.map((msg) =>
+                  msg.id === assistantMsgId
+                    ? {
+                        ...msg,
+                        content: receivedText,
+                        isLoading: false,
+                      }
+                    : msg
+                )
+              );
+              return;
+            }
+
+            // Decode the chunk and add to our text
+            const chunkText = decoder.decode(value, { stream: true });
+            receivedText += chunkText;
+
+            // Update the message with the current received text
+            setMessages((prevMessages) =>
+              prevMessages.map((msg) =>
+                msg.id === assistantMsgId
+                  ? {
+                      ...msg,
+                      content: receivedText,
+                      isLoading: true,
+                    }
+                  : msg
+              )
+            );
+
+            // Continue reading
+            await readChunk();
+          } catch (error) {
+            console.error("Error reading stream:", error);
+            setMessages((prevMessages) =>
+              prevMessages.map((msg) =>
+                msg.id === assistantMsgId
+                  ? {
+                      ...msg,
+                      content: `Error processing response: ${error}`,
+                      isLoading: false,
+                    }
+                  : msg
+              )
+            );
+          }
+        };
+
+        // Start reading the stream
+        readChunk();
+      })
+      .catch((error) => {
+        console.error("Error calling weather API:", error);
+        // Update message with error
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) =>
+            msg.id === assistantMsgId
+              ? {
+                  ...msg,
+                  content: `Error getting weather: ${error}`,
+                  isLoading: false,
+                }
+              : msg
+          )
+        );
+      });
   };
 
   // Function to cancel the weather tool form
@@ -977,60 +1494,119 @@ export function Chat() {
   };
 
   const handleResourceSelect = (value: string) => {
-    setIsResourceOpen(false);
+    console.log("Resource selected with URI:", value);
 
-    // Find the resource by URI to get its name
-    const selectedResource = resources.find((r: Resource) => r.uri === value);
-
-    // Set input to the selected resource name (not URI)
-    if (textareaRef.current && selectedResource) {
-      const currentValue = textareaRef.current.value;
-      const lastAtIndex = currentValue.lastIndexOf("@");
-
-      if (lastAtIndex !== -1) {
-        // Replace everything after the last @ with the selected resource name
-        const newValue =
-          currentValue.substring(0, lastAtIndex + 1) +
-          selectedResource.name +
-          " ";
-        setInputValue(newValue);
-
-        // Focus the textarea and move cursor to the end
-        textareaRef.current.focus();
-        setTimeout(() => {
-          if (textareaRef.current) {
-            textareaRef.current.selectionStart = newValue.length;
-            textareaRef.current.selectionEnd = newValue.length;
-          }
-        }, 0);
-      }
+    // Find the resource with this URI
+    const selectedResource = resources.find((r) => r.uri === value);
+    if (!selectedResource) {
+      console.error("Selected resource not found in resources list:", value);
+      setIsResourceOpen(false);
+      return;
     }
+
+    console.log("Found resource:", selectedResource.name);
+
+    // Get the current value and find the last @ symbol
+    const currentValue = inputValue;
+    const lastAtIndex = currentValue.lastIndexOf("@");
+
+    if (lastAtIndex === -1) {
+      console.warn("No @ symbol found in current input");
+      setIsResourceOpen(false);
+      return;
+    }
+
+    // Replace everything from the @ to where the cursor is with the resource name
+    const newValue =
+      currentValue.substring(0, lastAtIndex + 1) + selectedResource.name + " ";
+
+    // Update the input value
+    setInputValue(newValue);
+    setAiInput(newValue);
+
+    // Update the textarea and put the cursor at the end
+    if (textareaRef.current) {
+      textareaRef.current.value = newValue;
+      textareaRef.current.selectionStart = newValue.length;
+      textareaRef.current.selectionEnd = newValue.length;
+      textareaRef.current.focus();
+    }
+
+    // Ensure the resource popover is closed
+    setIsResourceOpen(false);
+    setSearchTerm("");
   };
 
-  const filteredPrompts = prompts.filter((prompt) => {
-    if (!searchTerm) return true;
-    return (
-      prompt.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      prompt.description.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  });
-
-  // Add weather to available commands
-  const availableCommands = [
-    { name: "weather", description: "Get the current weather for a location" },
-    ...filteredPrompts,
+  // Create categorized command groups for better organization
+  const toolCommands = [
+    {
+      name: "weather",
+      description: "Get the current weather for a location",
+      category: "Tools",
+    },
   ];
 
-  const filteredResources = resources.filter((resource) => {
-    if (!searchTerm) return true;
-    return (
-      resource.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (resource.description || "")
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      resource.uri.toLowerCase().includes(searchTerm.toLowerCase())
+  // Optimize filtering logic - only filter when there's an actual search term (more than just a slash)
+  const filteredPrompts = useMemo(() => {
+    // If no search term or just the slash character, return all prompts
+    if (!searchTerm || searchTerm === "") return prompts;
+
+    return prompts.filter(
+      (prompt) =>
+        prompt.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        prompt.description.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  });
+  }, [prompts, searchTerm]);
+
+  // All commands combined for backward compatibility
+  const availableCommands = useMemo(
+    () => [
+      ...toolCommands,
+      ...filteredPrompts.map((p) => ({
+        name: p.name,
+        description: p.description,
+        category: "Content",
+      })),
+    ],
+    [toolCommands, filteredPrompts]
+  );
+
+  // Create filtered commands by category for display in the UI
+  const filteredToolCommands = useMemo(() => {
+    // If no search term, return all tool commands without filtering
+    if (!searchTerm || searchTerm === "") return toolCommands;
+
+    return toolCommands.filter(
+      (cmd) =>
+        cmd.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        cmd.description.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [toolCommands, searchTerm]);
+
+  const filteredContentCommands = useMemo(
+    () =>
+      filteredPrompts.map((p) => ({
+        name: p.name,
+        description: p.description,
+        category: "Content",
+      })),
+    [filteredPrompts]
+  );
+
+  // Fix for resource popover to make sure it shows resources correctly
+  const filteredResources = useMemo(() => {
+    // If no search term, show all resources
+    if (!searchTerm || searchTerm.trim() === "") return resources;
+
+    return resources.filter(
+      (resource) =>
+        resource.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (resource.description || "")
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        resource.uri.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [resources, searchTerm]);
 
   const handleExpanderDone = (targetLength: string) => {
     setShowExpander(false);
@@ -1039,6 +1615,49 @@ export function Chat() {
       handleExpandContent(expanderContent, targetLength);
     }
   };
+
+  // Add more detailed logging
+  useEffect(() => {
+    console.log("Resources state updated:", resources);
+    console.log("Current search term:", searchTerm);
+    console.log("Filtered resources:", filteredResources);
+    console.log("Available commands:", availableCommands);
+  }, [resources, searchTerm, filteredResources, availableCommands]);
+
+  // Add a useEffect to log resources when they change
+  useEffect(() => {
+    if (resources.length > 0) {
+      console.log(
+        "Resources available:",
+        resources.map((r) => r.name).join(", ")
+      );
+
+      // Prepare welcome message
+      let welcomeMessage = `Welcome! `;
+
+      // Add resource info
+      welcomeMessage += `You can reference resources by typing '@' followed by the resource name. Available resources: ${resources
+        .map((r) => r.name)
+        .join(", ")}. `;
+
+      // Add command info if prompts are loaded
+      if (prompts.length > 0) {
+        welcomeMessage += `\n\nYou can also use slash commands by typing '/' followed by the command name. Available commands: ${prompts
+          .map((p) => p.name)
+          .join(", ")}, and 'weather'.`;
+      }
+
+      // Notify user about available resources and commands
+      if (messages.length === 0) {
+        const systemMsg = {
+          id: nanoid(),
+          role: "assistant" as const,
+          content: welcomeMessage,
+        };
+        setMessages([systemMsg]);
+      }
+    }
+  }, [resources, prompts, messages]);
 
   if (isConnecting) {
     return (
@@ -1183,32 +1802,73 @@ export function Chat() {
       </div>
 
       {/* Command dialog for prompts */}
-      <CommandDialog open={isCommandOpen} onOpenChange={setIsCommandOpen}>
+      <CommandDialog
+        open={isCommandOpen}
+        onOpenChange={(open) => {
+          setIsCommandOpen(open);
+          if (!open) {
+            // Reset search term when dialog is closed
+            setSearchTerm("");
+          }
+        }}
+      >
         <CommandInput
           placeholder="Search available commands..."
           value={searchTerm}
           onValueChange={setSearchTerm}
+          autoFocus={true}
           className="text-base font-medium !text-foreground"
         />
-        <CommandList className="font-sans">
+        <CommandList className="font-sans max-h-[300px] overflow-y-auto">
           <CommandEmpty>No commands found.</CommandEmpty>
+
+          {/* Tool Commands Group - Removed conditional to ensure they always appear */}
           <CommandGroup
-            heading="Available Commands"
+            heading="Tool Commands"
             className="font-medium text-base"
           >
-            {availableCommands.map((command) => (
+            {filteredToolCommands.map((command) => (
               <CommandItem
                 key={command.name}
                 value={command.name}
                 onSelect={handleCommandSelect}
-                className="text-base font-normal !text-foreground antialiased"
+                className="text-base font-normal !text-foreground antialiased hover:bg-gray-100 dark:hover:bg-gray-800"
                 style={{
                   WebkitFontSmoothing: "antialiased",
                   MozOsxFontSmoothing: "grayscale",
                   textRendering: "optimizeLegibility",
                 }}
               >
-                <div className="w-full">
+                <div className="w-full py-1">
+                  <div className="font-medium text-foreground not-italic">
+                    {command.name}
+                  </div>
+                  <div className="text-xs text-muted-foreground not-italic antialiased">
+                    {command.description}
+                  </div>
+                </div>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+
+          {/* Content Commands Group - Removed conditional to ensure they always appear */}
+          <CommandGroup
+            heading="Content Commands"
+            className="font-medium text-base"
+          >
+            {filteredContentCommands.map((command) => (
+              <CommandItem
+                key={command.name}
+                value={command.name}
+                onSelect={handleCommandSelect}
+                className="text-base font-normal !text-foreground antialiased hover:bg-gray-100 dark:hover:bg-gray-800"
+                style={{
+                  WebkitFontSmoothing: "antialiased",
+                  MozOsxFontSmoothing: "grayscale",
+                  textRendering: "optimizeLegibility",
+                }}
+              >
+                <div className="w-full py-1">
                   <div className="font-medium text-foreground not-italic">
                     {command.name}
                   </div>
@@ -1223,51 +1883,73 @@ export function Chat() {
       </CommandDialog>
 
       {/* Resource selection popover */}
-      <Popover open={isResourceOpen} onOpenChange={setIsResourceOpen}>
+      <Popover
+        open={isResourceOpen}
+        onOpenChange={(open) => {
+          setIsResourceOpen(open);
+          if (!open) {
+            // Reset search term when popover is closed
+            setSearchTerm("");
+          }
+        }}
+      >
         <PopoverTrigger asChild>
-          <Button className="hidden">Resources</Button>
+          <Button
+            className="absolute opacity-0"
+            style={{ pointerEvents: "none" }}
+          >
+            Resources
+          </Button>
         </PopoverTrigger>
         <PopoverContent
           className="w-[300px] p-0"
-          align="end"
+          align="start"
           side="top"
           sideOffset={10}
+          avoidCollisions={true}
         >
           <Command>
             <CommandInput
               placeholder="Search resources..."
               value={searchTerm}
               onValueChange={setSearchTerm}
+              autoFocus={true}
               className="text-base font-medium !text-foreground"
             />
-            <CommandList className="font-sans">
+            <CommandList className="font-sans max-h-[300px] overflow-y-auto">
               <CommandEmpty>No resources found.</CommandEmpty>
               <CommandGroup
                 heading="Available Resources"
                 className="font-medium text-base"
               >
-                {filteredResources.map((resource) => (
-                  <CommandItem
-                    key={resource.uri}
-                    value={resource.uri}
-                    onSelect={handleResourceSelect}
-                    className="text-base font-normal !text-foreground antialiased"
-                    style={{
-                      WebkitFontSmoothing: "antialiased",
-                      MozOsxFontSmoothing: "grayscale",
-                      textRendering: "optimizeLegibility",
-                    }}
-                  >
-                    <div className="w-full">
-                      <div className="font-medium text-foreground not-italic">
-                        {resource.name}
+                {filteredResources.length > 0 ? (
+                  filteredResources.map((resource) => (
+                    <CommandItem
+                      key={resource.uri}
+                      value={resource.uri}
+                      onSelect={handleResourceSelect}
+                      className="text-base font-normal !text-foreground antialiased hover:bg-gray-100 dark:hover:bg-gray-800"
+                      style={{
+                        WebkitFontSmoothing: "antialiased",
+                        MozOsxFontSmoothing: "grayscale",
+                        textRendering: "optimizeLegibility",
+                      }}
+                    >
+                      <div className="w-full py-1">
+                        <div className="font-medium text-foreground not-italic">
+                          {resource.name}
+                        </div>
+                        <div className="text-xs text-muted-foreground not-italic antialiased">
+                          {resource.description || resource.uri}
+                        </div>
                       </div>
-                      <div className="text-xs text-muted-foreground not-italic antialiased">
-                        {resource.description || resource.uri}
-                      </div>
-                    </div>
-                  </CommandItem>
-                ))}
+                    </CommandItem>
+                  ))
+                ) : (
+                  <div className="p-2 text-sm text-gray-500">
+                    Loading resources...
+                  </div>
+                )}
               </CommandGroup>
             </CommandList>
           </Command>

@@ -2,7 +2,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { ResourceReference, Prompt, Resource } from "@/app/types";
 
-class MCPClient {
+export class MCPClient {
   private static instance: MCPClient;
   private client: Client | null = null;
   private transport: StdioClientTransport | null = null;
@@ -116,11 +116,15 @@ class MCPClient {
       throw new Error("Client not initialized");
     }
 
+    console.log(`Executing MCP prompt: ${name} with args:`, args);
+
     try {
       const result = await this.client.getPrompt({
         name,
         arguments: args,
       });
+
+      console.log(`MCP prompt ${name} execution full result:`, result);
 
       if (result.messages && result.messages.length > 0) {
         // Find the first assistant message
@@ -136,16 +140,22 @@ class MCPClient {
           assistantMessage.content.type === "text" &&
           "text" in assistantMessage.content
         ) {
-          return assistantMessage.content.text || "";
-        } else {
-          return "No valid assistant message found in response";
+          console.log(
+            `Found assistant message in prompt result:`,
+            assistantMessage.content.text
+          );
+          return assistantMessage.content.text;
         }
-      } else {
-        return "No messages returned for prompt";
       }
+
+      // If no assistant message with text content is found, return the stringified result
+      console.log(
+        `No assistant message found in prompt result, returning stringified result`
+      );
+      return `Prompt result: ${JSON.stringify(result)}`;
     } catch (error) {
       console.error(`Error executing prompt ${name}:`, error);
-      return `Error: ${error instanceof Error ? error.message : String(error)}`;
+      throw new Error(`Failed to execute prompt ${name}: ${error}`);
     }
   }
 
@@ -187,6 +197,39 @@ class MCPClient {
     } catch (error) {
       console.error(`Error fetching resource ${uri}:`, error);
       return null;
+    }
+  }
+
+  /**
+   * Execute a tool via the MCP client
+   * @param toolName The name of the tool to execute
+   * @param args The arguments to pass to the tool
+   * @returns The result of the tool execution
+   */
+  public async executeTool(
+    toolName: string,
+    args: Record<string, any>
+  ): Promise<any> {
+    if (!this.client) {
+      throw new Error("Client not initialized");
+    }
+
+    console.log(`Executing MCP tool: ${toolName} with args:`, args);
+
+    try {
+      // Call the tool through the MCP client
+      const result = await this.client.callTool({
+        name: toolName,
+        arguments: args,
+      });
+
+      console.log(`MCP tool ${toolName} execution result:`, result);
+
+      // Return the full result
+      return result;
+    } catch (error) {
+      console.error(`Error executing tool ${toolName}:`, error);
+      throw new Error(`Failed to execute tool ${toolName}: ${error}`);
     }
   }
 
