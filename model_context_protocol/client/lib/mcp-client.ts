@@ -208,7 +208,7 @@ export class MCPClient {
    */
   public async executeTool(
     toolName: string,
-    args: Record<string, any>
+    args: Record<string, string>
   ): Promise<any> {
     if (!this.client) {
       throw new Error("Client not initialized");

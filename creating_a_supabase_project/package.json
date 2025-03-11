@@ -1,0 +1,14 @@
+{
+  "name": "creating_a_supabase_project",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "supabase": "^2.15.8"
+  }
+}
