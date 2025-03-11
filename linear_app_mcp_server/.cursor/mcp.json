@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "linear": {
+      "command": "node",
+      "args": [
+        "/Users/jamesaphoenix/Desktop/projects/just_understanding_data/ai-coding-with-cursor/linear_app_mcp_server/dist/index.js"
+      ]
+    }
+  }
+}
