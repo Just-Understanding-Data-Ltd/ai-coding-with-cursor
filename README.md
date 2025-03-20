@@ -12,16 +12,19 @@ Here is an overview of the folders in this repository:
 
 - [**1_cursor_cheatsheet**](./1_cursor_cheatsheet): A cheatsheet for using cursors effectively.
 - [**2_codebase_indexing_and_gitignore**](./2_codebase_indexing_and_gitignore): Instructions on indexing your codebase and using `.gitignore`.
-- [**3_understanding_cursors_autocomplete (tab completion)**](<./3_understanding_cursors_autocomplete%20(tab%20completion)>): Understanding and using cursor autocomplete features.
-- [**4_mastering_smart_rewrites**](./4_mastering_smart_rewrites): Techniques for mastering smart rewrites in your code.
-- [**5_building_a_nextjs_dashboard_page_with_ai_chat**](./5_building_a_nextjs_dashboard_page_with_ai_chat): Building a Next.js dashboard page with AI chat integration.
-- [**6_using_custom_documentation_with_llms**](./6_using_custom_documentation_with_llms): Using custom documentation with large language models (LLMs).
-- [**7_enhancing_context_with_image_attachments**](./7_enhancing_context_with_image_attachments): Enhancing context in your projects with image attachments.
-- [**8_maximizing_cmd_k_efficiency**](./8_maximizing_cmd_k_efficiency): Tips for maximizing efficiency with the `cmd + k` shortcut.
-- [**9_composer_introduction**](./9_composer_introduction): Introduction to using Composer in your projects.
-- [**10_composer_practice_prompt_templates**](./10_composer_practice_prompt_templates): Practice prompt templates for Composer.
-- [**11_dictation_with_composer**](./11_dictation_with_composer): Using dictation features with Composer.
-- [**useful_prompts_for_cursor**](./useful_prompts_for_cursor): A collection of prompts designed to automate specific tasks within Cursor. These prompts are useful for generating comments, explaining code, and improving codebase indexing, providing more context for the LLM to understand and assist with the code.
+- [**3_understanding_cursors_autocomplete**](./3_understanding_cursors_autocomplete): Understanding and using cursor autocomplete features.
+- [**4_building_a_nextjs_dashboard_page_with_ai_chat**](./4_building_a_nextjs_dashboard_page_with_ai_chat): Building a Next.js dashboard page with AI chat integration.
+- [**5_using_custom_documentation_with_llms**](./5_using_custom_documentation_with_llms): Using custom documentation with large language models (LLMs).
+- [**6_enhancing_context_with_image_attachments**](./6_enhancing_context_with_image_attachments): Enhancing context in your projects with image attachments.
+- [**7_maximizing_cmd_k_efficiency**](./7_maximizing_cmd_k_efficiency): Tips for maximizing efficiency with the `cmd + k` shortcut.
+- [**8_composer_introduction**](./8_composer_introduction): Introduction to using Composer in your projects.
+- [**9_composer_practice_prompt_templates**](./9_composer_practice_prompt_templates): Practice prompt templates for Composer.
+- [**10_dictation_with_composer**](./10_dictation_with_composer): Using dictation features with Composer.
+- [**11_using_different_models_for_different_tasks**](./11_using_different_models_for_different_tasks): Techniques for utilizing different models for specific tasks.
+- [**12_creating_a_supabase_project**](./12_creating_a_supabase_project): Guide for setting up and working with Supabase projects.
+- [**13_linear_app_mcp_server**](./13_linear_app_mcp_server): Implementation of a Linear app with MCP server integration.
+- [**14_model_context_protocol**](./14_model_context_protocol): Understanding and working with the Model Context Protocol.
+- [**15_useful_prompts_for_cursor**](./15_useful_prompts_for_cursor): A collection of prompts designed to automate specific tasks within Cursor. These prompts are useful for generating comments, explaining code, and improving codebase indexing, providing more context for the LLM to understand and assist with the code.
 
 ## Useful Resources
 
