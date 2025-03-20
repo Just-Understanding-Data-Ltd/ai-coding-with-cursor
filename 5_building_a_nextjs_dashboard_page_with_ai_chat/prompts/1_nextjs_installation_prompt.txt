@@ -1,0 +1,3 @@
+I want you to set up a nextjs boilerplate with shadcn. We are going to install a range of dashboard components and I want you to create a dashobard layout from scratch.
+
+There needs to be at least 3-4 charts so that we can easily see how powerful shadcn is!
