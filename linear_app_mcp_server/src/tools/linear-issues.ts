@@ -1,5 +1,3 @@
-import { LinearService } from "../services/linear.js";
-
 /**
  * Format a Linear issue for better readability
  */
