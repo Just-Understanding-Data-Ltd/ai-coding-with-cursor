@@ -1,1 +1,0 @@
-supabase gen types --lang=typescript --local > client/types/types.ts

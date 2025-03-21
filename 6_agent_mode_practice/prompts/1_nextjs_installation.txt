@@ -1,0 +1,1 @@
+Can you set up a NextJS application with shadcn/ui and tailwind css?
