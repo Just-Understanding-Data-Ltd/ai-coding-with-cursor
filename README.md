@@ -12,19 +12,18 @@ Here is an overview of the folders in this repository:
 
 - [**1_cursor_cheatsheet**](./1_cursor_cheatsheet): A cheatsheet for using cursors effectively.
 - [**2_codebase_indexing_and_gitignore**](./2_codebase_indexing_and_gitignore): Instructions on indexing your codebase and using `.gitignore`.
-- [**3_understanding_cursors_autocomplete**](./3_understanding_cursors_autocomplete): Understanding and using cursor autocomplete features.
-- [**4_building_a_nextjs_dashboard_page_with_ai_chat**](./4_building_a_nextjs_dashboard_page_with_ai_chat): Building a Next.js dashboard page with AI chat integration.
-- [**5_using_custom_documentation_with_llms**](./5_using_custom_documentation_with_llms): Using custom documentation with large language models (LLMs).
-- [**6_enhancing_context_with_image_attachments**](./6_enhancing_context_with_image_attachments): Enhancing context in your projects with image attachments.
-- [**7_maximizing_cmd_k_efficiency**](./7_maximizing_cmd_k_efficiency): Tips for maximizing efficiency with the `cmd + k` shortcut.
-- [**8_composer_introduction**](./8_composer_introduction): Introduction to using Composer in your projects.
-- [**9_composer_practice_prompt_templates**](./9_composer_practice_prompt_templates): Practice prompt templates for Composer.
-- [**10_dictation_with_composer**](./10_dictation_with_composer): Using dictation features with Composer.
-- [**11_using_different_models_for_different_tasks**](./11_using_different_models_for_different_tasks): Techniques for utilizing different models for specific tasks.
-- [**12_creating_a_supabase_project**](./12_creating_a_supabase_project): Guide for setting up and working with Supabase projects.
-- [**13_linear_app_mcp_server**](./13_linear_app_mcp_server): Implementation of a Linear app with MCP server integration.
-- [**14_model_context_protocol**](./14_model_context_protocol): Understanding and working with the Model Context Protocol.
-- [**15_useful_prompts_for_cursor**](./15_useful_prompts_for_cursor): A collection of prompts designed to automate specific tasks within Cursor. These prompts are useful for generating comments, explaining code, and improving codebase indexing, providing more context for the LLM to understand and assist with the code.
+- [**3_understanding_cursors_autocomplete**](./3_understanding_cursors_autocomplete): Understanding and using cursor autocomplete features (tab completion).
+- [**4_cmd_k_practice**](./4_cmd_k_practice): Practice for using the command palette with cmd+k.
+- [**5_building_a_nextjs_dashboard_page_with_ai_chat**](./5_building_a_nextjs_dashboard_page_with_ai_chat): Building a Next.js dashboard page with AI chat integration.
+- [**6_agent_mode_practice**](./6_agent_mode_practice): Practicing with Cursor's agent mode feature.
+- [**7_using_images_to_create_ui_elements_in_cursor**](./7_using_images_to_create_ui_elements_in_cursor): Creating UI elements using images as reference in Cursor.
+- [**8_using_custom_documentation_with_llms**](./8_using_custom_documentation_with_llms): Using custom documentation with large language models (LLMs).
+- [**9_dictation_with_composer**](./9_dictation_with_composer): Using dictation features with Composer.
+- [**10_using_different_models_for_different_tasks**](./10_using_different_models_for_different_tasks): Techniques for utilizing different models for specific tasks.
+- [**creating_a_supabase_project**](./creating_a_supabase_project): Guide for setting up and working with Supabase projects.
+- [**linear_app_mcp_server**](./linear_app_mcp_server): Implementation of a Linear app with MCP server integration.
+- [**model_context_protocol**](./model_context_protocol): Understanding and working with the Model Context Protocol.
+- [**useful_prompts_for_cursor**](./useful_prompts_for_cursor): A collection of prompts designed to automate specific tasks within Cursor. These prompts are useful for generating comments, explaining code, and improving codebase indexing, providing more context for the LLM to understand and assist with the code.
 
 ## Useful Resources
 
