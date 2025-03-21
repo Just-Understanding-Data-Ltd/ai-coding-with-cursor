@@ -1,0 +1,8 @@
+Create a simple authentication system using NextJS:
+
+1. Build a login page with email/password fields using shadcn components
+2. Implement form validation with zod
+3. Add a registration page for new users
+4. Create a protected dashboard route
+5. Add a logout function
+6. Show appropriate error messages for auth failures 

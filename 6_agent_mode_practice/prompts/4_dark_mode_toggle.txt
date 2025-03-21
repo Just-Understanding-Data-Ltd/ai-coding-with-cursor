@@ -1,0 +1,9 @@
+Implement a dark mode toggle for the application:
+
+1. Set up a theme provider using next-themes
+2. Create a toggle button component that switches between light and dark modes
+3. Update the UI components to respond to theme changes
+4. Add system preference detection for initial theme
+5. Persist user theme preference in local storage
+6. Ensure all components display correctly in both themes
+7. Add smooth transition animations between theme changes 
