@@ -1,0 +1,4 @@
+@chat-customer-bot-tasks.md can you now implement the changes required to the database? 
+Remember to use our CLI commands @supabase add in chat and messages tables etc and regenerate types.
+
+Don't generate the stream CRUD, but do generate the chat and message tables CRUD patterns for Tanstack query.

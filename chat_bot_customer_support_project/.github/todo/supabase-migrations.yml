@@ -1,0 +1,59 @@
+name: Supabase Database Migrations
+
+on:
+  push:
+    branches: [main, staging, dev]
+    paths:
+      - 'packages/supabase/supabase/**'
+      - '.github/workflows/supabase-migrations.yml'
+  pull_request:
+    types: [closed]
+    branches: [main, staging, dev]
+    paths:
+      - 'packages/supabase/supabase/**'
+      - '.github/workflows/supabase-migrations.yml'
+
+concurrency:
+  group: "migrations-${{ github.ref }}"
+  cancel-in-progress: true
+
+jobs:
+  migrate-database:
+    runs-on: ubuntu-latest
+    if: >
+      (github.event_name == 'pull_request' && github.event.pull_request.merged == true && 
+       (contains(github.event.pull_request.base.ref, 'main') || 
+        contains(github.event.pull_request.base.ref, 'staging') ||
+        contains(github.event.pull_request.base.ref, 'dev'))) || (github.event_name == 'push' && 
+         (github.ref_name == 'main' || 
+          github.ref_name == 'staging' ||
+          github.ref_name == 'dev'))
+
+    environment: ${{ github.ref_name == 'main' && 'production' || github.ref_name == 'staging' && 'staging' || 'development' }}
+
+    defaults:
+      run:
+        working-directory: packages/supabase
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link Supabase Project
+        run: |
+          echo "Linking Supabase project for environment: ${{ github.ref_name }}"
+          supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_ID }} --password ${{ secrets.SUPABASE_DB_PASSWORD }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Run Supabase Migrations
+        run: |
+          echo "Running migrations for environment: ${{ github.ref_name }}"
+          supabase db push
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}

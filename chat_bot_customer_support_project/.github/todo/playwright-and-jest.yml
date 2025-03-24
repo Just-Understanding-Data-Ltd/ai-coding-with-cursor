@@ -1,0 +1,148 @@
+name: Vitest and Playwright Tests
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+  GOOGLE_CLIENT_ID: ${{secrets.GOOGLE_CLIENT_ID}}
+  GOOGLE_CLIENT_SECRET: ${{secrets.GOOGLE_CLIENT_SECRET}}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    branches: [main, staging, dev]
+  push:
+    branches: [main, staging, dev]
+
+jobs:
+  api-test:
+    name: API Tests
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run Vitest
+        run: cd apps/api && pnpm test
+
+      - name: Upload Vitest coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vitest-coverage
+          path: apps/api/coverage/
+          retention-days: 30
+
+  web-test:
+    name: Web Tests
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: http://localhost:54321
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+      SUPABASE_SERVICE_ROLE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      # Vercel CLI setup
+      - name: Install Vercel CLI
+        run: pnpm add -g vercel@latest
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_API_TOKEN }}
+      - name: Copy Vercel Environment Variables
+        run: vercel env pull ./apps/web/.env.local --yes --environment=preview --token=${{ secrets.VERCEL_API_TOKEN }}
+
+      # Supabase setup
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Kill processes using Supabase ports
+        run: |
+          sudo lsof -ti:54321,54322,54323,54324,54325,54326,54327,54328 | xargs -r sudo kill -9
+
+      - name: Start Supabase
+        run: |
+          max_attempts=3
+          attempt=1
+          while [ $attempt -le $max_attempts ]; do
+            echo "Attempt $attempt to start Supabase..."
+            if supabase start; then
+              echo "Supabase started successfully"
+              break
+            else
+              echo "Attempt $attempt failed"
+              sudo lsof -ti:54321,54322,54323,54324,54325,54326,54327,54328 | xargs -r sudo kill -9
+              if [ $attempt -eq $max_attempts ]; then
+                echo "All attempts failed"
+                exit 1
+              fi
+              attempt=$((attempt+1))
+              sleep 5
+            fi
+          done
+
+      # Install Playwright browsers
+      - name: Install Playwright
+        run: cd apps/web && npx playwright install --with-deps
+
+      # Run Playwright tests
+      - name: Run Playwright tests
+        run: cd apps/web && npx playwright test
+
+      # Upload Playwright report
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report/
+          retention-days: 30
+
+  deploy:
+    needs: [api-test, web-test]
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Vercel CLI
+        run: pnpm add -g vercel@latest
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_API_TOKEN }}
+      - name: Copy Vercel Environment Variables
+        run: vercel env pull ./apps/web/.env.local --yes --environment=preview --token=${{ secrets.VERCEL_API_TOKEN }}
+
+      # Build Project Artifacts
+      - name: Build Project Artifacts
+        run: vercel build --prod --token=${{ secrets.VERCEL_API_TOKEN }}
+
+      # Deploy Project Artifacts to Vercel
+      - name: Deploy Project Artifacts to Vercel
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_API_TOKEN }}

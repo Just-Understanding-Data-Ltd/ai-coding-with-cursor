@@ -1,0 +1,10 @@
+# Ignore HTML from language statistics
+*.html linguist-detectable=false
+
+# Explicitly mark main languages
+*.ts linguist-detectable=true
+*.tsx linguist-detectable=true
+*.py linguist-detectable=true
+*.sql linguist-detectable=true
+*.js linguist-detectable=true
+*.css linguist-detectable=true

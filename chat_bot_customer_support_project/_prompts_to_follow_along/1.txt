@@ -1,0 +1,7 @@
+I want you to generate a product requirements doc in the @_mini_prds we are going to need to make a PRD showcasing all of the tasks so that we can change the existing boilerplate into a chat customer bot application. I.e. the user will be able to log in and see chats and create chats with OpenAI.
+
+We will be using the Vercel AI SDK and I would like to keep this simple. @supabase @page.tsx @Dashboard.tsx 
+
+I already have the ability to login so we don't need to do that. @chat-customer-bot-application.md We already have auth done.
+
+Make sure that most of the CRUD happens directly within @module 

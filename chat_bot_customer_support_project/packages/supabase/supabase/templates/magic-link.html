@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .button { display: inline-block; padding: 10px 20px; background-color: #0070f3; color: white; text-decoration: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p>
+            <a href="http://localhost:3000/api/auth/callback?token_hash={{ .TokenHash }}&type=magiclink&redirect_to=http://localhost:3000/dashboard" class="button">
+                Log In
+            </a>
+        </p>
+         
+        <p>This link will expire in 24 hours. If you didn't request this email, please ignore it.</p>
+        
+        <p>Best regards</p>
+    </div>
+</body>
+</html>

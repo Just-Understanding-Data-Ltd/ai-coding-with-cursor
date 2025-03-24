@@ -1,0 +1,57 @@
+apps/web/e2e/storage
+apps/web/test-results
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Env files:
+.env
+.env.*
+!.env.example
+
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+node_modules
+.turbo
+apps/web/.next
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# testing
+/coverage
+
+# next.js
+client/.next
+client/out
+
+# production
+client/build
+
+# misc
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env*.local
+!.env.example
+
+# vercel
+client/.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+.vercel
+
+# Playwright storage states
+apps/web/e2e/storage/*.json
+!apps/web/e2e/storage/.gitkeep

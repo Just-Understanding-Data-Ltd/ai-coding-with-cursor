@@ -1,0 +1,235 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Tanstack Query and Next.js Patterns
+
+## Hydration and Server/Client Data Flow
+
+The data flow from server to client involves three key steps:
+
+1. **Server Prefetching**: Server components prefetch data using static query keys
+2. **Dehydration**: The query cache is serialized into the HTML/JSON response
+3. **Client Hydration**: The client rehydrates the prefetched data using matching query keys
+
+### Example Implementation:
+
+```typescript
+// Server Component (page.tsx)
+export default async function Page() {
+  const queryClient = createQueryClient();
+  const supabase = await createClient();
+
+  // 1. Prefetch data on server
+  await queryClient.prefetchQuery({
+    queryKey: ["teams", "list"],
+    queryFn: () => getTeams({ supabase }),
+  });
+
+  // 2. Dehydrate the cache
+  const dehydratedState = dehydrate(queryClient);
+
+  // 3. Pass to client component
+  return (
+    <ClientComponent state={dehydratedState} />
+  );
+}
+
+// Client Component
+function ClientComponent({ state }: { state: DehydratedState }) {
+  return (
+    // 4. Hydrate the cache on client
+    <HydrationBoundary state={state}>
+      <YourComponent />
+    </HydrationBoundary>
+  );
+}
+
+// Child component automatically gets access to prefetched data
+function YourComponent() {
+  // Uses the same data prefetched on server
+  const { data } = useQuery({
+    queryKey: teamKeys.lists(),
+    queryFn: () => getTeams({ supabase }),
+  });
+}
+```
+
+### Best Practices:
+
+1. **Always wrap client components** with `HydrationBoundary` when using prefetched data
+2. **Match query keys** between server and client to ensure data is found
+3. **Handle loading states** while hydration is occurring
+4. **Use Suspense boundaries** around hydrated components for better loading UX
+
+## Why Static Query Keys for Server Components?
+
+Server components in Next.js cannot execute functions during rendering because:
+
+1. Server components are rendered once on the server
+2. The output is static HTML/JSON
+3. Function calls could be unpredictable or have side effects
+
+This means we need two patterns for query keys:
+
+```typescript
+// ❌ Won't work in server components (function call)
+queryKey: teamKeys.lists();
+
+// ✅ Works in server components (static value)
+queryKey: ["teams", "list"];
+// or
+queryKey: teamQueryKeys.lists;
+```
+
+### Example Implementation:
+
+```typescript
+// Client-side: Functions for dynamic values
+export const teamKeys = {
+  lists: () => ["teams", "list"] as QueryKey, // Function for client components
+  list: (filters) => ["teams", "list", filters],
+};
+
+// Server-side: Static arrays
+export const teamQueryKeys = {
+  lists: ["teams", "list"], // Static array for server components
+  list: (filters) => ["teams", "list", filters],
+};
+
+// Usage in server component (page.tsx)
+await queryClient.prefetchQuery({
+  queryKey: teamQueryKeys.lists,
+  queryFn: () => getTeams({ supabase }),
+});
+
+// Usage in client component
+const { data } = useQuery({
+  queryKey: teamKeys.lists(),
+  queryFn: () => getTeams({ supabase }),
+});
+```
+
+Both patterns generate the same array structure, allowing React Query to match prefetched data between server and client.
+
+
+For client side components:
+Both patterns generate the same array structure, allowing React Query to match prefetched data between server and client.
+
+## Client-Side Best Practices
+
+### Use the Global QueryClient
+
+Our application uses a single global QueryClient instance managed by the `ClientSideProviders` component. Never create new QueryClient instances in client components:
+
+```typescript
+// ❌ NEVER do this in client components
+const [queryClient] = useState(() => new QueryClient());
+
+// ❌ Also avoid wrapping components with additional QueryClientProvider
+return (
+  <QueryClientProvider client={queryClient}>
+    <YourComponent />
+  </QueryClientProvider>
+);
+```
+
+Instead, use hooks that access the global QueryClient:
+
+```typescript
+// ✅ DO use hooks that access the global QueryClient
+import { useQueryClient } from '@tanstack/react-query';
+
+function YourComponent() {
+  const queryClient = useQueryClient();
+  // Use it for invalidation, prefetching, etc.
+}
+```
+
+### Use Pre-Made Hooks Over Raw useMutation
+
+Prefer using pre-made hooks from our CRUD layer instead of creating custom mutation hooks:
+
+```typescript
+// ❌ AVOID creating custom mutations with raw Supabase calls
+const createChatMutation = useMutation({
+  mutationFn: async ({ teamId, title }) => {
+    const { data, error } = await supabase
+      .from("chats")
+      .insert({ team_id: teamId, title })
+      .select("*")
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+  // Manually handling cache invalidation
+  onSuccess: (data) => {
+    queryClient.invalidateQueries({ queryKey: ["chats", "list"] });
+  }
+});
+
+// ✅ DO use pre-made hooks from our CRUD layer
+import { useCreateChat } from "@repo/supabase";
+
+const { mutate: createChat, isPending: isCreating } = useCreateChat({
+  supabase,
+  options: {
+    // Extend with additional callbacks as needed
+    onSuccess: (newChat) => {
+      // The hook already handles cache invalidation
+      // Just add UI-specific logic here
+      router.push(`/org/${orgId}/${teamId}/chat/${newChat.id}`);
+    }
+  }
+});
+```
+
+### Add Navigation in onSuccess Callbacks
+
+When you need a mutation to trigger navigation, add the logic in the `onSuccess` callback:
+
+```typescript
+// Example: New Chat Button implementation
+export default function NewChatButton({ orgId, teamId }: NewChatButtonProps) {
+  const router = useRouter();
+  const supabase = createClient();
+  
+  const { mutate: createChat, isPending: isCreating } = useCreateChat({
+    supabase,
+    options: {
+      onSuccess: (newChat) => {
+        // Navigate to the newly created chat
+        router.push(`/org/${orgId}/${teamId}/chat/${newChat.id}`);
+      }
+    }
+  });
+
+  return (
+    <Button
+      onClick={() => createChat({ teamId, title: "New Chat" })}
+      disabled={isCreating}
+    >
+      {isCreating ? <Loader2 className="animate-spin" /> : "New Chat"}
+    </Button>
+  );
+}
+```
+
+This pattern ensures that:
+1. The mutation completes successfully before navigation
+2. Cache invalidation happens automatically through the pre-made hook
+3. All components using the same data stay in sync
+4. The UI logic remains separate from data operations
+
+
+We have CRUD layer and custom hooks like this:
+[teams.react.ts](mdc:packages/supabase/src/module/teams.react.ts)
+[teams.ts](mdc:packages/supabase/src/module/teams.ts)
+
+Each postgres table has custom hooks within the packages/supabase/module folder.
+
+You should avoid adding react-hot-toast for within React components as this should always be handled at the CRUD layer (albeit for the most part, unless otherwise told).
+
+

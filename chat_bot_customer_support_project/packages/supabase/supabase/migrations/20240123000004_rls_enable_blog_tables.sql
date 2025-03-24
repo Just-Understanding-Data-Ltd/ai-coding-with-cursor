@@ -1,0 +1,4 @@
+-- Enable Row Level Security (RLS) on all blog tables
+ALTER TABLE authors ENABLE ROW LEVEL SECURITY;
+ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE articles ENABLE ROW LEVEL SECURITY; 

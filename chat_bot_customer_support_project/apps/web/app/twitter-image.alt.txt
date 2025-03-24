@@ -1,0 +1,1 @@
+🧙‍♂️ CursorDevKit: AI-powered SaaS boilerplate with local-first development. Cursor.com friendly, comprehensive testing, crystal-clear docs. Launch faster with Next.js & Supabase magic! #NextJS #AI #TypeScript

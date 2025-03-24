@@ -1,0 +1,62 @@
+{
+  "name": "octospark-octo-app",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo dev",
+    "dev:api": "turbo dev --filter=api",
+    "dev:web": "turbo dev --filter=web",
+    "test": "NODE_OPTIONS='--experimental-vm-modules' vitest run --exclude \"**/*.e2e.{test,spec}.{ts,tsx}\" --exclude \"**/e2e/**\"",
+    "test:e2e": "cd apps/web && npx playwright test",
+    "test:e2e:ui": "cd apps/web && npx playwright test --ui",
+    "test:e2e:debug": "cd apps/web && npx playwright test --debug",
+    "test:e2e:report": "cd apps/web && npx playwright show-report",
+    "test:integration": "NODE_ENV=development cd apps/web && vitest run -c vitest.integration.config.ts",
+    "test:integration:watch": "NODE_ENV=development cd apps/web && vitest -c vitest.integration.config.ts",
+    "type-check": "tsc -b --noEmit",
+    "build": "turbo run build",
+    "clean": "turbo run clean",
+    "db:generate-types": "cd packages/supabase && pnpm run db:generate-types",
+    "db:reset": "cd packages/supabase && pnpm run db:reset",
+    "db:reset-debug": "cd packages/supabase && pnpm run db:reset-debug",
+    "db:reset-with-types": "cd packages/supabase && pnpm run db:reset-with-types",
+    "db:setup": "cd packages/supabase && pnpm run db:setup",
+    "db:start": "cd packages/supabase && pnpm run db:start",
+    "db:stop": "cd packages/supabase && pnpm run db:stop"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.2.0",
+    "@eslint/js": "^9.18.0",
+    "@faker-js/faker": "^9.4.0",
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^22.10.7",
+    "@vitejs/plugin-react": "^4.2.1",
+    "commander": "^13.0.0",
+    "cross-env": "^7.0.3",
+    "depcheck": "^1.4.7",
+    "dotenv": "^16.0.3",
+    "find-unused-exports": "^7.1.1",
+    "lint-staged": "^15.4.0",
+    "prettier": "^3.4.2",
+    "tsx": "^4.19.2",
+    "turbo": "^2.4.4",
+    "typescript": "5.7.3",
+    "vite": "^6.1.0",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^3.0.5"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "type": "module",
+  "packageManager": "pnpm@10.6.4",
+  "dependencies": {
+    "nanoid": "^5.1.5",
+    "next": "15.2.3"
+  }
+}

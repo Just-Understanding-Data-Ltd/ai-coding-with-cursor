@@ -1,0 +1,1 @@
+🧙‍♂️ CursorDevKit: Your magical SaaS companion featuring AI-powered development, local-first Supabase setup, and comprehensive testing. Built with Next.js, TypeScript, and enhanced with Cursor.com integration. Transform into a full-stack wizard with our enchanted boilerplate. 🪄

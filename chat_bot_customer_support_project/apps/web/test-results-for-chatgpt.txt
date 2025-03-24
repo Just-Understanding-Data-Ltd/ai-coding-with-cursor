@@ -1,0 +1,390 @@
+
+Test Results Summary:
+Total Tests: 24
+Passed: 19
+Failed: 5
+Skipped: 0
+
+Detailed Results:
+
+Test: navigating to /onboarding redirects to /login
+Status: passed
+Duration: 3528ms
+
+Steps:
+- Before Hooks (368ms)
+- page.goto(/onboarding) (2838ms)
+- expect.toHaveURL (170ms)
+- After Hooks (350ms)
+
+
+Test: accessing /org/12312312/1231312 redirects to /login
+Status: passed
+Duration: 3532ms
+
+Steps:
+- Before Hooks (367ms)
+- page.goto(/org/12312312/1231312) (2842ms)
+- expect.toHaveURL (338ms)
+- After Hooks (184ms)
+
+
+Test: accessing /org/workspaces redirects to /login
+Status: passed
+Duration: 3543ms
+
+Steps:
+- Before Hooks (366ms)
+- page.goto(/org/workspaces) (2834ms)
+- expect.toHaveURL (274ms)
+- After Hooks (258ms)
+
+
+Test: accessing /org redirects to /login
+Status: passed
+Duration: 3546ms
+
+Steps:
+- Before Hooks (367ms)
+- page.goto(/org) (2849ms)
+- expect.toHaveURL (346ms)
+- After Hooks (175ms)
+
+
+Test: displays hero section with correct content
+Status: passed
+Duration: 3613ms
+
+Steps:
+- Before Hooks (3342ms)
+- expect.toBeVisible (205ms)
+- expect.toBeVisible (7ms)
+- expect.toBeVisible (7ms)
+- After Hooks (248ms)
+
+
+Test: should be able to access the homepage
+Status: passed
+Duration: 3619ms
+
+Steps:
+- Before Hooks (368ms)
+- page.goto(/) (2846ms)
+- expect.toHaveURL (25ms)
+- After Hooks (576ms)
+
+
+Test: displays features section
+Status: passed
+Duration: 5330ms
+
+Steps:
+- Before Hooks (4865ms)
+- expect.toBeVisible (36ms)
+- After Hooks (431ms)
+
+
+Test: displays CTA section
+Status: passed
+Duration: 5286ms
+
+Steps:
+- Before Hooks (4835ms)
+- expect.toBeVisible (28ms)
+- After Hooks (426ms)
+
+
+Test: displays FAQ section
+Status: passed
+Duration: 5289ms
+
+Steps:
+- Before Hooks (4845ms)
+- expect.toBeVisible (27ms)
+- After Hooks (419ms)
+
+
+Test: displays USP section
+Status: passed
+Duration: 5351ms
+
+Steps:
+- Before Hooks (4902ms)
+- expect.toBeVisible (31ms)
+- After Hooks (421ms)
+
+
+Test: displays testimonial section
+Status: passed
+Duration: 5390ms
+
+Steps:
+- Before Hooks (4872ms)
+- expect.toBeVisible (41ms)
+- After Hooks (479ms)
+
+
+Test: displays pain points section
+Status: passed
+Duration: 5422ms
+
+Steps:
+- Before Hooks (4902ms)
+- expect.toBeVisible (30ms)
+- After Hooks (494ms)
+
+
+Test: should navigate to /onboarding
+Status: passed
+Duration: 4645ms
+
+Steps:
+- Before Hooks (82ms)
+- page.goto(/org) (3947ms)
+- expect.toHaveURL (131ms)
+- expect.toBeVisible (170ms)
+- expect.toBeVisible (15ms)
+- After Hooks (294ms)
+
+
+Test: responsive design breakpoints
+Status: passed
+Duration: 5023ms
+
+Steps:
+- Before Hooks (4322ms)
+- page.setViewportSize (26ms)
+- expect.toBeVisible (12ms)
+- page.setViewportSize (27ms)
+- expect.toBeVisible (7ms)
+- page.setViewportSize (19ms)
+- expect.toBeVisible (135ms)
+- After Hooks (471ms)
+
+
+Test: theme switching works
+Status: passed
+Duration: 5207ms
+
+Steps:
+- Before Hooks (4356ms)
+- page.evaluate (45ms)
+- locator.getByTestId('theme-toggle').click (158ms)
+- page.evaluate (14ms)
+- expect.not.toBe (30ms)
+- After Hooks (603ms)
+
+
+Test: navigation works correctly
+Status: passed
+Duration: 5824ms
+
+Steps:
+- Before Hooks (4378ms)
+- locator.getByRole('button', { name: 'Get Started' }).click (289ms)
+- expect.toHaveURL (974ms)
+- After Hooks (182ms)
+
+
+Test: allows navigation between steps
+Status: passed
+Duration: 3026ms
+
+Steps:
+- Before Hooks (132ms)
+- page.goto(/onboarding) (1568ms)
+- locator.getByTestId('org-name-input').fill (311ms)
+- locator.getByTestId('billing-email-input').fill (14ms)
+- locator.getByTestId('next-button').click (78ms)
+- locator.getByTestId('prev-button').click (392ms)
+- expect.toHaveValue (364ms)
+- After Hooks (162ms)
+
+
+Test: persists data between steps
+Status: passed
+Duration: 2686ms
+
+Steps:
+- Before Hooks (168ms)
+- page.goto(/onboarding) (1202ms)
+- locator.getByTestId('org-name-input').fill (291ms)
+- locator.getByTestId('billing-email-input').fill (13ms)
+- locator.getByTestId('next-button').click (109ms)
+- locator.getByTestId('brand-name-input').fill (173ms)
+- locator.getByTestId('next-button').click (42ms)
+- locator.getByTestId('prev-button').click (47ms)
+- locator.getByTestId('prev-button').click (46ms)
+- expect.toHaveValue (357ms)
+- expect.toHaveValue (4ms)
+- After Hooks (222ms)
+
+
+Test: should redirect to workspaces if user has no teams
+Status: passed
+Duration: 3227ms
+
+Steps:
+- Before Hooks (38ms)
+- page.goto(/org) (662ms)
+- expect.toHaveURL (2451ms)
+- After Hooks (76ms)
+
+
+Test: should redirect to team workspace for client org member
+Status: failed
+Duration: 18185ms
+Error: Error: [31mTimed out 15000ms waiting for [39m[2mexpect([22m[31mlocator[39m[2m).[22mtoHaveURL[2m([22m[32mexpected[39m[2m)[22m
+
+Locator: locator(':root')
+Expected pattern: [32m/^\/org\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/[39m
+Received string:  [31m"http://localhost:3000/org/[object%20Object]"[39m
+Call log:
+[2m  - expect.toHaveURL with timeout 15000ms[22m
+[2m  - waiting for locator(':root')[22m
+[2m    - waiting for" http://localhost:3000/org/11111111-2222-3333-4444-555555555555/44444444-5555-6666-7777-888888888888" navigation to finish...[22m
+[2m    - navigated to "http://localhost:3000/org/11111111-2222-3333-4444-555555555555/44444444-5555-6666-7777-888888888888"[22m
+[2m    - locator resolved to <html lang="en">…</html>[22m
+[2m    3 × unexpected value "http://localhost:3000/org/11111111-2222-3333-4444-555555555555/44444444-5555-6666-7777-888888888888"[22m
+[2m      - locator resolved to <html lang="en" class="light">…</html>[22m
+[2m    - unexpected value "http://localhost:3000/org/11111111-2222-3333-4444-555555555555/44444444-5555-6666-7777-888888888888"[22m
+[2m    - waiting for" http://localhost:3000/org/[object%20Object]" navigation to finish...[22m
+[2m    - navigated to "http://localhost:3000/org/[object%20Object]"[22m
+[2m    6 × locator resolved to <html lang="en" class="light">…</html>[22m
+[2m      - unexpected value "http://localhost:3000/org/[object%20Object]"[22m
+
+
+Steps:
+- Before Hooks (366ms)
+- page.goto(/org) (2833ms)
+- expect.toHaveURL (15021ms)
+- After Hooks (156ms)
+- Worker Cleanup (25ms)
+- attach "trace" (1ms)
+
+
+Test: should redirect to team workspace if user has teams
+Status: failed
+Duration: 18196ms
+Error: Error: [31mTimed out 15000ms waiting for [39m[2mexpect([22m[31mlocator[39m[2m).[22mtoHaveURL[2m([22m[32mexpected[39m[2m)[22m
+
+Locator: locator(':root')
+Expected pattern: [32m/^\/org\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/[39m
+Received string:  [31m"http://localhost:3000/org/[object%20Object]"[39m
+Call log:
+[2m  - expect.toHaveURL with timeout 15000ms[22m
+[2m  - waiting for locator(':root')[22m
+[2m    - waiting for" http://localhost:3000/org/11111111-2222-3333-4444-555555555555/44444444-5555-6666-7777-888888888888" navigation to finish...[22m
+[2m    - navigated to "http://localhost:3000/org/11111111-2222-3333-4444-555555555555/44444444-5555-6666-7777-888888888888"[22m
+[2m    2 × locator resolved to <html lang="en">…</html>[22m
+[2m      - unexpected value "http://localhost:3000/org/11111111-2222-3333-4444-555555555555/44444444-5555-6666-7777-888888888888"[22m
+[2m    3 × locator resolved to <html lang="en" class="light">…</html>[22m
+[2m      - unexpected value "http://localhost:3000/org/11111111-2222-3333-4444-555555555555/44444444-5555-6666-7777-888888888888"[22m
+[2m    - waiting for" http://localhost:3000/org/[object%20Object]" navigation to finish...[22m
+[2m    - navigated to "http://localhost:3000/org/[object%20Object]"[22m
+[2m    6 × locator resolved to <html lang="en" class="light">…</html>[22m
+[2m      - unexpected value "http://localhost:3000/org/[object%20Object]"[22m
+
+
+Steps:
+- Before Hooks (367ms)
+- page.goto(/org) (2838ms)
+- expect.toHaveURL (15016ms)
+- After Hooks (167ms)
+- Worker Cleanup (50ms)
+- attach "trace" (0ms)
+
+
+Test: validates required fields
+Status: failed
+Duration: 19859ms
+Error: Error: [31mTimed out 15000ms waiting for [39m[2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m()[22m
+
+Locator: getByText(/organization name must be at least 2 characters/)
+Expected: visible
+Received: <element(s) not found>
+Call log:
+[2m  - expect.toBeVisible with timeout 15000ms[22m
+[2m  - waiting for getByText(/organization name must be at least 2 characters/)[22m
+
+
+Steps:
+- Before Hooks (47ms)
+- page.goto(/onboarding) (4220ms)
+- locator.getByTestId('next-button').click (191ms)
+- expect.toBeVisible (15007ms)
+- After Hooks (393ms)
+- Worker Cleanup (13ms)
+- attach "trace" (0ms)
+
+
+Test: completes onboarding flow
+Status: failed
+Duration: 21988ms
+Error: Error: [31mTimed out 15000ms waiting for [39m[2mexpect([22m[31mlocator[39m[2m).[22mtoHaveURL[2m([22m[32mexpected[39m[2m)[22m
+
+Locator: locator(':root')
+Expected string: [32m"http://localhost:3000/o[7mr[27mg"[39m
+Received string: [31m"http://localhost:3000/o[7mnboardin[27mg"[39m
+Call log:
+[2m  - expect.toHaveURL with timeout 15000ms[22m
+[2m  - waiting for locator(':root')[22m
+[2m    19 × locator resolved to <html lang="en" class="light">…</html>[22m
+[2m       - unexpected value "http://localhost:3000/onboarding"[22m
+
+
+Steps:
+- Before Hooks (51ms)
+- page.goto(/onboarding) (3932ms)
+- locator.getByTestId('org-name-input').fill (607ms)
+- locator.getByTestId('billing-email-input').fill (27ms)
+- locator.getByTestId('next-button').click (46ms)
+- locator.getByTestId('brand-name-input').fill (280ms)
+- locator.getByTestId('brand-website-input').fill (17ms)
+- locator.getByTestId('next-button').click (86ms)
+- locator.getByTestId('role-freelance_marketer').click (519ms)
+- locator.getByTestId('next-button').click (32ms)
+- locator.getByTestId('goal-publish_multiple_platforms').click (513ms)
+- locator.getByTestId('next-button').click (33ms)
+- locator.getByTestId('referral-google_search').click (530ms)
+- locator.getByTestId('submit-button').click (45ms)
+- expect.toHaveURL (15012ms)
+- After Hooks (227ms)
+- Worker Cleanup (13ms)
+- attach "trace" (0ms)
+
+
+Test: redirects to organization page after successful submission
+Status: failed
+Duration: 18735ms
+Error: Error: [31mTimed out 15000ms waiting for [39m[2mexpect([22m[31mlocator[39m[2m).[22mtoHaveURL[2m([22m[32mexpected[39m[2m)[22m
+
+Locator: locator(':root')
+Expected pattern: [32m/^\/org$/[39m
+Received string:  [31m"http://localhost:3000/onboarding"[39m
+Call log:
+[2m  - expect.toHaveURL with timeout 15000ms[22m
+[2m  - waiting for locator(':root')[22m
+[2m    19 × locator resolved to <html lang="en" class="light">…</html>[22m
+[2m       - unexpected value "http://localhost:3000/onboarding"[22m
+
+
+Steps:
+- Before Hooks (63ms)
+- page.goto(/onboarding) (1156ms)
+- locator.getByTestId('org-name-input').fill (255ms)
+- locator.getByTestId('billing-email-input').fill (14ms)
+- locator.getByTestId('next-button').click (87ms)
+- locator.getByTestId('brand-name-input').fill (223ms)
+- locator.getByTestId('brand-website-input').fill (12ms)
+- locator.getByTestId('next-button').click (38ms)
+- locator.getByTestId('role-freelance_marketer').click (533ms)
+- locator.getByTestId('next-button').click (32ms)
+- locator.getByTestId('goal-publish_multiple_platforms').click (464ms)
+- locator.getByTestId('next-button').click (32ms)
+- locator.getByTestId('referral-google_search').click (513ms)
+- locator.getByTestId('submit-button').click (37ms)
+- expect.toHaveURL (15013ms)
+- After Hooks (257ms)
+- Worker Cleanup (23ms)
+- attach "trace" (0ms)

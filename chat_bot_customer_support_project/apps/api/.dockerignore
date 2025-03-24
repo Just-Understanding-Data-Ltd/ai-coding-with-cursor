@@ -1,0 +1,23 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build outputs
+dist
+build
+coverage
+
+# Development files
+.env*
+.git
+.gitignore
+README.md
+*.log
+*.test.ts
+*.spec.ts
+.vscode
+.idea
+
+# Docker
+Dockerfile
+.dockerignore 

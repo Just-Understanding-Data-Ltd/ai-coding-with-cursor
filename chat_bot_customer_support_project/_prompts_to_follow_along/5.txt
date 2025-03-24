@@ -1,0 +1,3 @@
+@chat-customer-bot-tasks.md @page.tsx I want to refactor this page and the @sidebar.tsx @MainSidebar.tsx so that the left side has a chat window with create new in the top left. And we can receive all of our messages.@chats.react.ts @chats.ts @messages.react.ts @messages.ts 
+
+Can you change the side bar so that it shows all of the messages when a user is logged in for their messages?

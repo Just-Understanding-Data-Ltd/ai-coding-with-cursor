@@ -1,0 +1,7 @@
+@migrations Curently the side bar needs some work. for example there is a lot of overlap with various elements.
+
+The other problem that we are having is I cannot create a new chat. And I cannot see my old chats that have been created, by the team_id even though I can create them I can't see them. I think it is an RLS issue.
+
+It says chat not found when we get redirected into that specific page.
+
+Can you remove the + new chat in the top right? As you've just added a button. Also can you add on the chat to the first navigation as well.

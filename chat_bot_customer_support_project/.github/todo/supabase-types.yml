@@ -1,0 +1,86 @@
+name: Supabase TypeScript Types Check
+
+on:
+  pull_request:
+    branches: ["*"]
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'packages/supabase/**'
+      - 'apps/web/types/**'
+      - '.github/workflows/supabase-types.yml'
+  push:
+    branches: ["*"]
+    paths:
+      - 'packages/supabase/**'
+      - 'apps/web/types/**'
+      - '.github/workflows/supabase-types.yml'
+
+jobs:
+  check-types:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: packages/supabase
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start Supabase
+        run: |
+          max_attempts=3
+          attempt=1
+          while [ $attempt -le $max_attempts ]; do
+            echo "Attempt $attempt to start Supabase..."
+            if supabase start; then
+              echo "Supabase started successfully"
+              break
+            else
+              echo "Attempt $attempt failed"
+              sudo lsof -ti:54321,54322,54323,54324,54325,54326,54327,54328 | xargs -r sudo kill -9
+              if [ $attempt -eq $max_attempts ]; then
+                echo "All attempts failed"
+                exit 1
+              fi
+              attempt=$((attempt+1))
+              sleep 5
+            fi
+          done
+
+      - name: Generate and Check Types
+        run: |
+          # Generate types for the shared package
+          supabase gen types --local typescript > src/types/database.types.ts
+          
+          # Generate types for the web app
+          supabase gen types --local typescript > ../../apps/web/types/database.types.ts
+
+          # Check for uncommitted changes in shared package
+          if ! git diff --ignore-space-at-eol --exit-code src/types/database.types.ts; then
+            echo "Detected uncommitted changes in packages/supabase/src/types/database.types.ts"
+            git diff
+            exit 1
+          fi
+
+          # Check for uncommitted changes in web app
+          if ! git diff --ignore-space-at-eol --exit-code ../../apps/web/types/database.types.ts; then
+            echo "Detected uncommitted changes in apps/web/types/database.types.ts"
+            git diff
+            exit 1
+          fi

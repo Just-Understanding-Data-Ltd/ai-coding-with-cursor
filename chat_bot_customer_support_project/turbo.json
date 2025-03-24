@@ -1,0 +1,189 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": [".env"],
+  "tasks": {
+    "db:generate-types": {
+      "cache": false,
+      "inputs": ["supabase/**/*"]
+    },
+    "db:reset": {
+      "cache": false,
+      "inputs": ["supabase/**/*"]
+    },
+    "db:reset-debug": {
+      "cache": false,
+      "inputs": ["supabase/**/*"]
+    },
+    "db:reset-with-types": {
+      "cache": false,
+      "inputs": ["supabase/**/*"]
+    },
+    "db:setup": {
+      "cache": false,
+      "inputs": ["supabase/**/*"],
+      "dependsOn": ["db:start"]
+    },
+    "db:start": {
+      "cache": false,
+      "inputs": ["supabase/**/*"]
+    },
+    "db:stop": {
+      "cache": false,
+      "inputs": ["supabase/**/*"]
+    },
+    "dev": {
+      "cache": false,
+      "dependsOn": ["^build"],
+      "env": [
+        "OPENAI_API_KEY",
+        "INTERNAL_API_KEY",
+        "SENTRY_SUPPRESS_TURBOPACK_WARNING",
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "NEXT_PUBLIC_SITE_URL",
+        "RESEND_API_KEY",
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+        "NEXT_PUBLIC_STRIPE_PUBLIC_KEY",
+        "STRIPE_SECRET_KEY",
+        "STRIPE_WEBHOOK_SECRET",
+        "NEXT_PUBLIC_STRIPE_PRICE_ID_SINGLE_PAYMENT",
+        "NEXT_PUBLIC_STRIPE_PRICE_ID_SINGLE_PAYMENT_SECONDARY",
+        "NEXT_PUBLIC_STRIPE_PRICE_ID_MONTHLY_SUBSCRIPTION",
+        "SENTRY_AUTH_TOKEN",
+        "NEXT_PUBLIC_SENTRY_DSN",
+        "NEXT_PUBLIC_SENTRY_ORG",
+        "NEXT_PUBLIC_SENTRY_PROJECT",
+        "KV_URL",
+        "KV_REST_API_READ_ONLY_TOKEN",
+        "KV_REST_API_TOKEN",
+        "KV_REST_API_URL"
+      ],
+      "persistent": true
+    },
+    "build": {
+      "dependsOn": ["^build", "type-check"],
+      "env": [
+        "OPENAI_API_KEY",
+        "INTERNAL_API_KEY",
+        "SENTRY_SUPPRESS_TURBOPACK_WARNING",
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "NEXT_PUBLIC_SITE_URL",
+        "RESEND_API_KEY",
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+        "NEXT_PUBLIC_STRIPE_PUBLIC_KEY",
+        "STRIPE_SECRET_KEY",
+        "STRIPE_WEBHOOK_SECRET",
+        "NEXT_PUBLIC_STRIPE_PRICE_ID_SINGLE_PAYMENT",
+        "NEXT_PUBLIC_STRIPE_PRICE_ID_SINGLE_PAYMENT_SECONDARY",
+        "NEXT_PUBLIC_STRIPE_PRICE_ID_MONTHLY_SUBSCRIPTION",
+        "SENTRY_AUTH_TOKEN",
+        "NEXT_PUBLIC_SENTRY_DSN",
+        "NEXT_PUBLIC_SENTRY_ORG",
+        "NEXT_PUBLIC_SENTRY_PROJECT",
+        "KV_URL",
+        "KV_REST_API_READ_ONLY_TOKEN",
+        "KV_REST_API_TOKEN",
+        "KV_REST_API_URL"
+      ],
+      "inputs": [
+        "src/**/*.tsx",
+        "src/**/*.ts",
+        "src/**/*.css",
+        "**/*.tsx",
+        "**/*.ts",
+        "**/*.css",
+        "package.json",
+        "tsconfig.json",
+        ".env*"
+      ],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+    },
+    "clean": {
+      "cache": false,
+      "outputs": []
+    },
+    "lint": {
+      "inputs": [
+        "src/**/*.tsx",
+        "src/**/*.ts",
+        "src/**/*.js",
+        "**/*.tsx",
+        "**/*.ts",
+        "**/*.js",
+        ".eslintrc.*",
+        "package.json"
+      ],
+      "outputs": []
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "env": [
+        "OPENAI_API_KEY",
+        "INTERNAL_API_KEY",
+        "SENTRY_SUPPRESS_TURBOPACK_WARNING",
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "NEXT_PUBLIC_SITE_URL",
+        "RESEND_API_KEY",
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+        "NEXT_PUBLIC_STRIPE_PUBLIC_KEY",
+        "STRIPE_SECRET_KEY",
+        "STRIPE_WEBHOOK_SECRET",
+        "NEXT_PUBLIC_STRIPE_PRICE_ID_SINGLE_PAYMENT",
+        "NEXT_PUBLIC_STRIPE_PRICE_ID_SINGLE_PAYMENT_SECONDARY",
+        "NEXT_PUBLIC_STRIPE_PRICE_ID_MONTHLY_SUBSCRIPTION",
+        "SENTRY_AUTH_TOKEN",
+        "NEXT_PUBLIC_SENTRY_DSN",
+        "NEXT_PUBLIC_SENTRY_ORG",
+        "NEXT_PUBLIC_SENTRY_PROJECT",
+        "KV_URL",
+        "KV_REST_API_READ_ONLY_TOKEN",
+        "KV_REST_API_TOKEN",
+        "KV_REST_API_URL"
+      ],
+      "inputs": [
+        "src/**/*.tsx",
+        "src/**/*.ts",
+        "**/*.tsx",
+        "**/*.ts",
+        "test/**/*.ts",
+        "test/**/*.tsx",
+        "package.json"
+      ]
+    },
+    "type-check": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "src/**/*.tsx",
+        "src/**/*.ts",
+        "**/*.tsx",
+        "**/*.ts",
+        "tsconfig.json"
+      ],
+      "outputs": []
+    },
+    "test:integration": {
+      "dependsOn": ["^build", "db:reset"],
+      "env": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ],
+      "inputs": [
+        "src/**/*.tsx",
+        "src/**/*.ts",
+        "integration/**/*.ts",
+        "integration/**/*.tsx",
+        "package.json"
+      ]
+    }
+  },
+  "ui": "stream"
+}

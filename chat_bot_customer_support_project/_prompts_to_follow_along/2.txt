@@ -1,0 +1,5 @@
+@chat-customer-bot-tasks.md I want to work through and optimize the @OnboardingForm.tsx, we will need to make some changes to the enums and database structure.@supabase 
+
+Update the SQL and the onboarding form. I don't want the chat to be part of the onboarding flow. Also avoid putting the chats within the SQL migration. 
+
+Only modify the onboarding form and the SQL migration.
