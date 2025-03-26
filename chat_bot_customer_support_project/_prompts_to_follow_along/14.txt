@@ -1,0 +1,7 @@
+Can you add an appointments table?
+
+I want to show the user a calendar widget of first the date and also when they will book via the time. Let's create some randomised time sessions so that they can easily book a time that works for them up to 1 month in the future.
+
+Also I want to connect the API route handler functions to directly use the appointments table.@chats.react.ts @chats.ts 
+
+Can you generate the same server actions and tanstack hooks so that we can easily use these within the API route handler? @route.ts 

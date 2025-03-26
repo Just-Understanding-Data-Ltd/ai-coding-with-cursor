@@ -6,6 +6,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { HelpCircle } from "lucide-react";
+import { config } from "@/config";
 
 interface FAQProps {
   faqs: Array<{ question: string; answer: string }>;
@@ -26,8 +27,7 @@ export default function FAQSection({ faqs }: FAQProps) {
             Frequently Asked Questions
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-300">
-            Everything you need to know about OctoSpark's social media
-            management tools
+            Everything you need to know about {config.name}
           </p>
         </div>
 

@@ -6,8 +6,16 @@ import {
   mockAdminMember,
   mockMemberRole,
 } from "@/__tests__/unit-test-mocks";
-import { clearCommonMocks, mockRouter } from "@/__tests__/mocks";
+import { clearCommonMocks } from "@/__tests__/mocks";
 import { renderWithProviders } from "@/__tests__/test-utils";
+
+// Mock router with explicit push method
+const mockRouterPush = vi.fn();
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: mockRouterPush,
+  }),
+}));
 
 // Mock window.confirm
 const mockConfirm = vi.fn();
@@ -35,6 +43,7 @@ describe("WorkspaceCard", () => {
     mockConfirm.mockClear();
     mockUpdateTeam.mockClear();
     mockDeleteTeam.mockClear();
+    mockRouterPush.mockClear();
   });
 
   describe("Rendering", () => {
@@ -153,7 +162,7 @@ describe("WorkspaceCard", () => {
       fireEvent.click(card);
 
       await waitFor(() => {
-        expect(mockRouter.push).toHaveBeenCalledWith(
+        expect(mockRouterPush).toHaveBeenCalledWith(
           `/org/${mockTeam.organization_id}/${mockTeam.id}`
         );
       });
@@ -169,7 +178,7 @@ describe("WorkspaceCard", () => {
       );
 
       fireEvent.click(screen.getByRole("article"));
-      expect(mockRouter.push).not.toHaveBeenCalled();
+      expect(mockRouterPush).not.toHaveBeenCalled();
     });
   });
 });

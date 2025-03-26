@@ -61,6 +61,10 @@ export * from "./module/chats.react";
 export * from "./module/messages";
 export * from "./module/messages.react";
 
+// Appointments
+export * from "./module/appointments";
+export * from "./module/appointments.react";
+
 // Re-export types
 export * from "./database.types";
 export * from "./types";

@@ -21,8 +21,8 @@ export default function HomePage() {
         ctaClassName="px-8 py-4"
       />
       <PainPointsSection {...config.homepage.painPointsSection} />
-      <USPSection usps={config.homepage.usps} />
-      <FeaturesSection {...config.homepage.featuresSection} />
+      {/* <USPSection usps={config.homepage.usps} /> */}
+      {/* <FeaturesSection {...config.homepage.featuresSection} /> */}
       {/* <section
         id="pricing"
         className="bg-gray-50 dark:bg-gray-900 py-16"

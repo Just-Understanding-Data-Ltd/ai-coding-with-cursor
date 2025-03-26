@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { config } from "@/config";
-import { Inbox, Video } from "lucide-react";
+import { MessageSquare, Search } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface HeroSectionProps {
@@ -39,7 +39,7 @@ export default function HeroSection({
       </div>
 
       <div className="px-4 mx-auto max-w-screen-xl text-center relative z-10">
-        <motion.div
+        {/* <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
@@ -51,7 +51,7 @@ export default function HeroSection({
               Now supporting Facebook, Instagram & TikTok
             </span>
           </div>
-        </motion.div>
+        </motion.div> */}
 
         <motion.h1
           initial={{ opacity: 0 }}
@@ -129,12 +129,13 @@ export default function HeroSection({
             className="bg-white/10 backdrop-blur-sm p-8 rounded-xl border border-white/20 flex flex-col items-center text-center hover:bg-white/15 transition-all duration-300 shadow-lg hover:shadow-xl"
           >
             <div className="inline-flex items-center justify-center p-4 bg-indigo-700/60 rounded-lg mb-5 shadow-lg">
-              <Inbox className="h-7 w-7" />
+              <MessageSquare className="h-7 w-7" />
             </div>
-            <h3 className="text-xl font-bold mb-3">AI-Powered Social Inbox</h3>
+            <h3 className="text-xl font-bold mb-3">Intelligent Scheduling</h3>
             <p className="text-gray-200">
-              Manage all your comments and messages across platforms with
-              intelligent AI responses and moderation.
+              Book meetings effortlessly with our AI chat assistant that
+              understands your needs and automatically finds the perfect time
+              slot.
             </p>
           </motion.div>
 
@@ -145,12 +146,12 @@ export default function HeroSection({
             className="bg-white/10 backdrop-blur-sm p-8 rounded-xl border border-white/20 flex flex-col items-center text-center hover:bg-white/15 transition-all duration-300 shadow-lg hover:shadow-xl"
           >
             <div className="inline-flex items-center justify-center p-4 bg-indigo-700/60 rounded-lg mb-5 shadow-lg">
-              <Video className="h-7 w-7" />
+              <Search className="h-7 w-7" />
             </div>
-            <h3 className="text-xl font-bold mb-3">Video Content Analysis</h3>
+            <h3 className="text-xl font-bold mb-3">Smart Product Discovery</h3>
             <p className="text-gray-200">
-              Generate data-driven content strategies by analyzing 500+
-              competitor videos for each client.
+              Engage in interactive conversations that match your requirements
+              with the right Cursor Industries solutions and services.
             </p>
           </motion.div>
         </div>

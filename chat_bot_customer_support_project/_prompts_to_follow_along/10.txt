@@ -1,0 +1,1 @@
+Currently all of the chats start with New Chat, can we use the users message so that they don't end up looking the same. Can you use the first message to create a title for the chat?

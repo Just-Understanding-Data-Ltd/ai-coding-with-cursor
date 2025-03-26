@@ -18,7 +18,7 @@ export default function StripePainPointsSection({
           {title}
         </h2>
         <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 text-center mb-16 max-w-3xl mx-auto">
-          Stop wasting time on tedious social media tasks and focus on what
+          Stop wasting time on tedious product discovery tasks and focus on what
           really matters
         </p>
 
@@ -32,7 +32,7 @@ export default function StripePainPointsSection({
                 </h3>
               </div>
               <p className="text-red-700/70 dark:text-red-400/70 font-medium">
-                The old way of managing social media
+                The old way of managing product discovery
               </p>
             </div>
             <div className="p-6 space-y-4">
@@ -54,7 +54,7 @@ export default function StripePainPointsSection({
                 </h3>
               </div>
               <p className="text-green-700/70 dark:text-green-400/70 font-medium">
-                The smart way to manage social media
+                The smart way to manage product discovery
               </p>
             </div>
             <div className="p-6 space-y-4">

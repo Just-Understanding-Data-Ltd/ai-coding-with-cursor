@@ -51,6 +51,7 @@ export async function createMessage({
   userId,
   tokensUsed,
   metadata,
+  tool_calls,
 }: {
   supabase: SupabaseClient;
   chatId: string;
@@ -59,6 +60,7 @@ export async function createMessage({
   userId?: string;
   tokensUsed?: number;
   metadata?: Json;
+  tool_calls?: Json;
 }): Promise<Message> {
   try {
     const { data, error } = await supabase
@@ -70,6 +72,7 @@ export async function createMessage({
         created_by: userId,
         tokens_used: tokensUsed,
         metadata,
+        tool_calls,
       })
       .select("*")
       .single();

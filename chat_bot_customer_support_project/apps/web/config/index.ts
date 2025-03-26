@@ -1,14 +1,5 @@
 import { AppConfig } from "@/types/config";
-import {
-  Search,
-  BarChart,
-  Clock,
-  Server,
-  Home,
-  Inbox,
-  Users,
-  MessageSquare,
-} from "lucide-react";
+import { Search, BarChart, Inbox, Users, MessageSquare } from "lucide-react";
 import { BillingMode } from "@/types/config";
 import { LucideIcon } from "lucide-react";
 
@@ -24,15 +15,15 @@ interface DashboardConfig {
 }
 
 export const config: AppConfig = {
-  name: "OctoSpark",
-  domainName: "OctoSpark.ai",
+  name: "Cursor Industries",
+  domainName: "cursor.industries",
   appDescription:
-    "Transform social media management with AI-powered inbox and intelligent video content strategies",
+    "Transform your product discovery experience with Cursor Industries' AI-powered meeting scheduler and intelligent chat assistant",
   company: {
-    name: "OctoSpark",
+    name: "Cursor Industries",
     address: "",
     phone: "",
-    supportEmail: "support@OctoSpark.ai",
+    supportEmail: "support@cursor.industries",
   },
   indieMaker: {
     name: "James Phoenix",
@@ -95,155 +86,157 @@ export const config: AppConfig = {
   },
   homepage: {
     numberOfMakersShipped: 50,
-    heroTitle: "Social Media Management Made Effortless",
+    heroTitle: "Cursor Industries Product Discovery",
     heroSubtitle:
-      "Streamline your social media interactions with AI-powered commenting and generate data-driven content strategies from video analysis.",
+      "Experience seamless product exploration with our intelligent chat assistant. Book meetings, understand our solutions, and get personalized recommendations through natural conversation.",
     usps: [
       {
-        title: "AI-Powered Inbox",
+        title: "Intelligent Scheduling",
         description:
-          "Manage all your social accounts from a unified inbox with intelligent comment automation.",
-        icon: Inbox,
+          "Our AI chat assistant understands your needs and automatically finds the perfect meeting time with Cursor Industries experts.",
+        icon: MessageSquare,
       },
       {
-        title: "Video-Based Content Strategies",
+        title: "Smart Product Discovery",
         description:
-          "Analyze 500+ competitor videos to generate actionable content strategies for your brand.",
-        icon: BarChart,
+          "Interactive conversations that help match your requirements with Cursor Industries' comprehensive solution suite.",
+        icon: Search,
       },
       {
-        title: "Team Collaboration",
+        title: "Automated Preparation",
         description:
-          "Seamlessly work with internal teams and clients through shared workspaces.",
+          "Receive personalized meeting agendas and detailed product documentation before every Cursor Industries consultation.",
         icon: Users,
       },
     ],
     painPointsSection: {
-      title: "Revolutionize Your Social Media Management",
+      title:
+        "Transform Your Product Discovery Experience with Cursor Industries",
       withoutProduct: {
         points: [
-          "Overwhelmed by managing multiple social accounts",
-          "Hours wasted watching competitor videos for ideas",
-          "Missed engagement opportunities",
-          "Inconsistent community management",
-          "Struggle to stay on top of comments and messages",
+          "Time wasted on back-and-forth emails for scheduling",
+          "Confusion about which product features match your needs",
+          "Lack of preparation materials before meetings",
+          "Difficulty in finding suitable meeting times",
+          "Limited understanding of product offerings",
         ],
       },
       withProduct: {
         points: [
-          "Unified inbox for all social platforms",
-          "AI-generated content strategies from video analysis",
-          "Automated comment management",
-          "Consistent brand engagement",
-          "Never miss important interactions",
+          "Instant meeting scheduling through AI chat",
+          "Personalized Cursor Industries product recommendations",
+          "Comprehensive meeting preparation guides",
+          "Smart availability matching with our team",
+          "Clear understanding of our solutions",
         ],
       },
     },
     featuresSection: {
-      title: "Powerful Tools for Modern Social Media Teams",
+      title: "Why Choose Cursor Industries?",
       useTabLayout: true,
-      description: "Everything you need to excel at social media management",
+      description:
+        "Advanced AI-powered features for seamless product discovery",
       features: [
         {
-          title: "Unified Social Inbox",
+          title: "Natural Language Scheduling",
           description:
-            "Manage comments and messages from all your social accounts in one place. Prioritize, filter, and respond to interactions efficiently.",
-          image: "/features/inbox.png",
-          icon: Inbox,
+            "Our AI understands your scheduling preferences and instantly finds the perfect meeting time with Cursor Industries experts.",
+          image: "/features/scheduling.png",
+          icon: MessageSquare,
         },
         {
-          title: "AI Comment Management",
+          title: "Intelligent Product Matching",
           description:
-            "Let AI handle routine comments and flag important ones for your attention. Set up automated responses that match your brand voice.",
-          image: "/features/ai-commenting.png",
+            "Through natural conversation, our AI helps identify your needs and matches them with Cursor Industries' comprehensive solution suite.",
+          image: "/features/discovery.png",
           icon: Search,
         },
         {
-          title: "Video Content Analysis",
+          title: "Automated Meeting Prep",
           description:
-            "Our AI analyzes 500+ videos from your competitors and industry to generate data-driven content strategies unique to your brand.",
-          image: "/features/video-analysis.png",
-          icon: BarChart,
+            "Receive personalized meeting agendas, product documentation, and preparation materials about Cursor Industries solutions.",
+          image: "/features/preparation.png",
+          icon: Users,
         },
         {
-          title: "Team Collaboration",
+          title: "Smart Follow-up System",
           description:
-            "Work seamlessly with your team and clients through shared workspaces. Assign tasks, share insights, and maintain brand consistency.",
-          image: "/features/team-collab.png",
-          icon: Users,
+            "Get automated reminders, meeting summaries, and easy rescheduling options for your Cursor Industries consultations.",
+          image: "/features/followup.png",
+          icon: Inbox,
         },
       ],
     },
     testimonials: [
       {
         imageId: 1,
-        name: "Sarah Johnson",
-        company: "Social Media Manager",
+        name: "David Chen",
+        company: "Enterprise Solutions Director",
         quote:
-          "OctoSpark's AI comment management has transformed our workflow. We're responding faster and maintaining better relationships with our audience.",
+          "Cursor Industries' chat bot made our product discovery process incredibly smooth. It understood our requirements perfectly and scheduled meetings with the right team members.",
       },
       {
         imageId: 2,
-        name: "Michael Chen",
-        company: "Digital Marketing Agency",
+        name: "Sarah Miller",
+        company: "Technology Lead",
         quote:
-          "The video analysis feature gave us insights we would have missed. Our content strategy is now data-driven and much more effective.",
+          "The automated meeting preparation and intelligent scheduling saved us hours of time. Cursor Industries' product recommendations were spot-on for our needs.",
       },
       {
         imageId: 3,
-        name: "Emily Rodriguez",
-        company: "Tech Startup",
+        name: "Alex Thompson",
+        company: "Project Manager",
         quote:
-          "Managing multiple social accounts was a nightmare before OctoSpark. Now our entire team stays on the same page with the unified inbox.",
+          "Having an AI guide us through Cursor Industries' solutions helped us make informed decisions quickly. The entire process was effortless.",
       },
     ],
     faqs: [
       {
-        question: "How does OctoSpark's AI comment management work?",
+        question: "How does Cursor Industries' AI scheduling work?",
         answer:
-          "Our AI analyzes incoming comments across your social platforms, categorizes them by sentiment and intent, and can automatically respond to routine inquiries while flagging important ones for your attention. You can customize response templates and train the AI on your brand voice.",
+          "Our AI chat bot uses natural language processing to understand your scheduling preferences, team availability, and time zone requirements. It automatically suggests optimal meeting times with Cursor Industries experts.",
       },
       {
-        question: "Which social media platforms do you support?",
+        question: "What types of meetings can I schedule?",
         answer:
-          "We currently support Facebook, Instagram, and TikTok, with more platforms coming soon. You can manage all your accounts from a single unified inbox.",
+          "You can schedule product demos, technical consultations, discovery sessions, and follow-up meetings with Cursor Industries teams. Our AI helps determine the most appropriate meeting type based on your needs.",
       },
       {
-        question: "How does the video content analysis work?",
+        question: "How does the product discovery process work?",
         answer:
-          "Our AI downloads and analyzes up to 500 videos from your competitors and industry leaders. It identifies trends, engagement patterns, content themes, and optimal formats, then generates actionable content strategies tailored to your brand and audience.",
+          "Through natural conversation, our AI learns about your requirements and challenges. It then recommends relevant Cursor Industries solutions and arranges meetings with our product specialists.",
       },
       {
-        question: "How long does it take to analyze 500 videos?",
+        question: "What preparation materials are provided?",
         answer:
-          "The initial analysis takes 24-48 hours, depending on the complexity of your industry and the specific accounts being analyzed. After the initial analysis, our system provides regular updates based on new content.",
+          "You'll receive customized Cursor Industries product documentation, meeting agendas, and relevant case studies based on your interests. All materials are automatically generated and sent before your meeting.",
       },
       {
-        question: "Can I manage multiple brands or clients?",
+        question: "Can I modify or reschedule meetings?",
         answer:
-          "Yes, our platform supports organization and team management, allowing you to manage multiple brands or clients under a single account with customized permissions and workspaces.",
+          "Yes, simply chat with our AI to modify or reschedule any meeting with Cursor Industries. It will handle all the updates and coordination with all participants automatically.",
       },
       {
-        question: "How do you ensure the quality of AI responses?",
+        question: "Is the chat bot available 24/7?",
         answer:
-          "Our AI is trained on successful social media interactions and follows your brand guidelines. You can review all automated responses, set up approval workflows for specific scenarios, and continuously train the system through feedback.",
+          "Yes, Cursor Industries' AI chat bot is available 24/7 for scheduling, product inquiries, and general assistance. It schedules meetings during business hours while respecting all time zones.",
       },
       {
-        question: "Do you offer moderation features?",
+        question: "How does the AI understand my needs?",
         answer:
-          "Yes, our platform includes advanced moderation tools to automatically hide or flag inappropriate comments, spam, and negative sentiment. You can customize moderation rules based on your specific needs.",
+          "Our AI uses advanced natural language processing to understand your requirements, preferences, and challenges. It learns from each interaction to provide better recommendations for Cursor Industries solutions.",
       },
       {
-        question: "How do team permissions work?",
+        question: "What happens after scheduling a meeting?",
         answer:
-          "You can assign different roles and permissions to team members and clients, controlling access to specific features, accounts, and actions. This ensures everyone has the access they need while maintaining security.",
+          "You'll receive immediate confirmation, calendar invites, and preparation materials about Cursor Industries products. Our chat bot will send reminders and remain available for any pre-meeting questions.",
       },
     ],
     ctaSection: {
-      title: "Ready to Transform Your Social Media Management?",
+      title: "Ready to Discover Cursor Industries Solutions?",
       description:
-        "Start managing your social accounts more efficiently with AI-powered tools.",
-      ctaText: "Get Started",
+        "Start chatting with our AI assistant to explore our products and schedule your ideal consultation.",
+      ctaText: "Start Chat",
       ctaLink: "/login",
     },
   },

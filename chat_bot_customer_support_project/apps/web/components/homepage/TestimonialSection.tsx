@@ -3,7 +3,7 @@ import { Star, Quote } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-
+import { config } from "@/config";
 interface TestimonialProps {
   testimonials: Array<{
     name: string;
@@ -27,10 +27,10 @@ export default function TestimonialSection({ testimonials }: TestimonialProps) {
             <Star className="h-6 w-6 text-primary" />
           </div>
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Loved by Social Media Teams
+            Loved by Product Discovery Teams
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-300">
-            See what our customers have to say about OctoSpark
+            See what our customers have to say about {config.name}
           </p>
         </div>
 
@@ -84,8 +84,8 @@ export default function TestimonialSection({ testimonials }: TestimonialProps) {
         <div className="mt-16 text-center">
           <div className="flex flex-col items-center">
             <p className="text-gray-600 dark:text-gray-300 mb-5 max-w-xl mx-auto">
-              Join hundreds of social media teams who are already using
-              OctoSpark to streamline their workflow
+              Join hundreds of product discovery teams who are already using
+              {config.name} to streamline their workflow
             </p>
             <Button
               onClick={() => router.push("/login")}

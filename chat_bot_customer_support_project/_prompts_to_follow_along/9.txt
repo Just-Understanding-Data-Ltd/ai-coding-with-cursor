@@ -1,3 +1,462 @@
-1. I can't see the stream coming back in and updating the chat UI
-2. I want the ability to delete a chat and use shadcn for this.
-3. These messages need to be synced from the DB with the messagesfrom the Vercel AI SDK hook.ß
+@Vercel AI SDK @chat @chat-customer-bot-tasks.md @module 
+
+I want you to use OpenAI streaming within my nextjs application and to make sure that we can easily read the messages after they have been loaded from the database. This should update the messages before we send our first post request. 
+
+There are various hooks you can use such as setMessages, setInput etc.
+
+AI SDK 4.2 is now available!
+
+Read Announcement
+AI SDK by Vercel
+Foundations
+
+Overview
+Providers and Models
+Prompts
+Tools
+Streaming
+Agents
+Getting Started
+
+Navigating the Library
+Next.js App Router
+Next.js Pages Router
+Svelte
+Nuxt
+Node.js
+Expo
+Guides
+
+RAG Chatbot
+Multi-Modal Chatbot
+Slackbot Guide
+Natural Language Postgres
+Get started with Computer Use
+OpenAI Responses API
+Get started with Claude 3.7 Sonnet
+Get started with Llama 3.1
+Get started with OpenAI GPT-4.5
+Get started with OpenAI o1
+Get started with OpenAI o3-mini
+Get started with DeepSeek R1
+AI SDK Core
+
+Overview
+Generating Text
+Generating Structured Data
+Tool Calling
+Prompt Engineering
+Settings
+Embeddings
+Image Generation
+Provider Management
+Language Model Middleware
+Error Handling
+Testing
+Telemetry
+AI SDK UI
+
+Overview
+Chatbot
+Chatbot Message Persistence
+Chatbot Tool Usage
+Generative User Interfaces
+Completion
+Object Generation
+OpenAI Assistants
+Streaming Custom Data
+Error Handling
+Stream Protocols
+AI SDK RSC
+
+Advanced
+
+Reference
+
+AI SDK Core
+
+AI SDK UI
+
+AI SDK RSC
+
+Stream Helpers
+
+AI SDK Errors
+
+Migration Guides
+
+Troubleshooting
+
+Getting Started
+Next.js App Router
+Next.js App Router Quickstart
+In this quick start tutorial, you'll build a simple AI-chatbot with a streaming user interface. Along the way, you'll learn key concepts and techniques that are fundamental to using the SDK in your own projects.
+
+Check out Prompt Engineering and HTTP Streaming if you haven't heard of them.
+
+Prerequisites
+To follow this quickstart, you'll need:
+
+Node.js 18+ and pnpm installed on your local development machine.
+An OpenAI API key.
+If you haven't obtained your OpenAI API key, you can do so by signing up on the OpenAI website.
+
+Create Your Application
+Start by creating a new Next.js application. This command will create a new directory named my-ai-app and set up a basic Next.js application inside it.
+
+Be sure to select yes when prompted to use the App Router and Tailwind CSS. If you are looking for the Next.js Pages Router quickstart guide, you can find it here.
+
+pnpm create next-app@latest my-ai-app
+Navigate to the newly created directory:
+
+cd my-ai-app
+Install dependencies
+Install ai, @ai-sdk/react, and @ai-sdk/openai, the AI package, AI SDK's React hooks, and AI SDK's OpenAI provider respectively.
+
+The AI SDK is designed to be a unified interface to interact with any large language model. This means that you can change model and providers with just one line of code! Learn more about available providers and building custom providers in the providers section.
+
+pnpm
+npm
+yarn
+pnpm add ai @ai-sdk/react @ai-sdk/openai zod
+Make sure you are using ai version 3.1 or higher.
+
+Configure OpenAI API key
+Create a .env.local file in your project root and add your OpenAI API Key. This key is used to authenticate your application with the OpenAI service.
+
+touch .env.local
+Edit the .env.local file:
+
+.env.local
+
+OPENAI_API_KEY=xxxxxxxxx
+Replace xxxxxxxxx with your actual OpenAI API key.
+
+The AI SDK's OpenAI Provider will default to using the OPENAI_API_KEY environment variable.
+
+Create a Route Handler
+Create a route handler, app/api/chat/route.ts and add the following code:
+
+app/api/chat/route.ts
+
+import { openai } from '@ai-sdk/openai';
+import { streamText } from 'ai';
+
+// Allow streaming responses up to 30 seconds
+export const maxDuration = 30;
+
+export async function POST(req: Request) {
+  const { messages } = await req.json();
+
+  const result = streamText({
+    model: openai('gpt-4o'),
+    messages,
+  });
+
+  return result.toDataStreamResponse();
+}
+Let's take a look at what is happening in this code:
+
+Define an asynchronous POST request handler and extract messages from the body of the request. The messages variable contains a history of the conversation between you and the chatbot and provides the chatbot with the necessary context to make the next generation.
+Call streamText, which is imported from the ai package. This function accepts a configuration object that contains a model provider (imported from @ai-sdk/openai) and messages (defined in step 1). You can pass additional settings to further customise the model's behaviour.
+The streamText function returns a StreamTextResult. This result object contains the toDataStreamResponse function which converts the result to a streamed response object.
+Finally, return the result to the client to stream the response.
+This Route Handler creates a POST request endpoint at /api/chat.
+
+Wire up the UI
+Now that you have a Route Handler that can query an LLM, it's time to setup your frontend. The AI SDK's UI package abstracts the complexity of a chat interface into one hook, useChat.
+
+Update your root page (app/page.tsx) with the following code to show a list of chat messages and provide a user message input:
+
+app/page.tsx
+
+'use client';
+
+import { useChat } from '@ai-sdk/react';
+
+export default function Chat() {
+  const { messages, input, handleInputChange, handleSubmit } = useChat();
+  return (
+    <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
+      {messages.map(message => (
+        <div key={message.id} className="whitespace-pre-wrap">
+          {message.role === 'user' ? 'User: ' : 'AI: '}
+          {message.parts.map((part, i) => {
+            switch (part.type) {
+              case 'text':
+                return <div key={`${message.id}-${i}`}>{part.text}</div>;
+            }
+          })}
+        </div>
+      ))}
+
+      <form onSubmit={handleSubmit}>
+        <input
+          className="fixed dark:bg-zinc-900 bottom-0 w-full max-w-md p-2 mb-8 border border-zinc-300 dark:border-zinc-800 rounded shadow-xl"
+          value={input}
+          placeholder="Say something..."
+          onChange={handleInputChange}
+        />
+      </form>
+    </div>
+  );
+}
+Make sure you add the "use client" directive to the top of your file. This allows you to add interactivity with Javascript.
+
+This page utilizes the useChat hook, which will, by default, use the POST API route you created earlier (/api/chat). The hook provides functions and state for handling user input and form submission. The useChat hook provides multiple utility functions and state variables:
+
+messages - the current chat messages (an array of objects with id, role, and parts properties).
+input - the current value of the user's input field.
+handleInputChange and handleSubmit - functions to handle user interactions (typing into the input field and submitting the form, respectively).
+The LLM's response is accessed through the message parts array. Each message contains an ordered array of parts that represents everything the model generated in its response. These parts can include plain text, reasoning tokens, and more that you will see later. The parts array preserves the sequence of the model's outputs, allowing you to display or process each component in the order it was generated.
+
+Running Your Application
+With that, you have built everything you need for your chatbot! To start your application, use the command:
+
+pnpm run dev
+Head to your browser and open http://localhost:3000. You should see an input field. Test it out by entering a message and see the AI chatbot respond in real-time! The AI SDK makes it fast and easy to build AI chat interfaces with Next.js.
+
+Enhance Your Chatbot with Tools
+While large language models (LLMs) have incredible generation capabilities, they struggle with discrete tasks (e.g. mathematics) and interacting with the outside world (e.g. getting the weather). This is where tools come in.
+
+Tools are actions that an LLM can invoke. The results of these actions can be reported back to the LLM to be considered in the next response.
+
+For example, if a user asks about the current weather, without tools, the model would only be able to provide general information based on its training data. But with a weather tool, it can fetch and provide up-to-date, location-specific weather information.
+
+Let's enhance your chatbot by adding a simple weather tool.
+
+Update Your Route Handler
+Modify your app/api/chat/route.ts file to include the new weather tool:
+
+app/api/chat/route.ts
+
+import { openai } from '@ai-sdk/openai';
+import { streamText, tool } from 'ai';
+import { z } from 'zod';
+
+export const maxDuration = 30;
+
+export async function POST(req: Request) {
+  const { messages } = await req.json();
+
+  const result = streamText({
+    model: openai('gpt-4o'),
+    messages,
+    tools: {
+      weather: tool({
+        description: 'Get the weather in a location (fahrenheit)',
+        parameters: z.object({
+          location: z.string().describe('The location to get the weather for'),
+        }),
+        execute: async ({ location }) => {
+          const temperature = Math.round(Math.random() * (90 - 32) + 32);
+          return {
+            location,
+            temperature,
+          };
+        },
+      }),
+    },
+  });
+
+  return result.toDataStreamResponse();
+}
+In this updated code:
+
+You import the tool function from the ai package and z from zod for schema validation.
+
+You define a tools object with a weather tool. This tool:
+
+Has a description that helps the model understand when to use it.
+Defines parameters using a Zod schema, specifying that it requires a location string to execute this tool. The model will attempt to extract this parameter from the context of the conversation. If it can't, it will ask the user for the missing information.
+Defines an execute function that simulates getting weather data (in this case, it returns a random temperature). This is an asynchronous function running on the server so you can fetch real data from an external API.
+Now your chatbot can "fetch" weather information for any location the user asks about. When the model determines it needs to use the weather tool, it will generate a tool call with the necessary parameters. The execute function will then be automatically run, and you can access the results via toolInvocations that is available on the message object.
+
+Try asking something like "What's the weather in New York?" and see how the model uses the new tool.
+
+Notice the blank response in the UI? This is because instead of generating a text response, the model generated a tool call. You can access the tool call and subsequent tool result in the toolInvocations key of the message object.
+
+Update the UI
+To display the tool invocations in your UI, update your app/page.tsx file:
+
+app/page.tsx
+
+'use client';
+
+import { useChat } from '@ai-sdk/react';
+
+export default function Chat() {
+  const { messages, input, handleInputChange, handleSubmit } = useChat();
+  return (
+    <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
+      {messages.map(message => (
+        <div key={message.id} className="whitespace-pre-wrap">
+          {message.role === 'user' ? 'User: ' : 'AI: '}
+          {message.parts.map((part, i) => {
+            switch (part.type) {
+              case 'text':
+                return <div key={`${message.id}-${i}`}>{part.text}</div>;
+              case 'tool-invocation':
+                return (
+                  <pre key={`${message.id}-${i}`}>
+                    {JSON.stringify(part.toolInvocation, null, 2)}
+                  </pre>
+                );
+            }
+          })}
+        </div>
+      ))}
+
+      <form onSubmit={handleSubmit}>
+        <input
+          className="fixed dark:bg-zinc-900 bottom-0 w-full max-w-md p-2 mb-8 border border-zinc-300 dark:border-zinc-800 rounded shadow-xl"
+          value={input}
+          placeholder="Say something..."
+          onChange={handleInputChange}
+        />
+      </form>
+    </div>
+  );
+}
+With this change, you're updating the UI to handle different message parts. For text parts, you display the text content as before. For tool invocations, you display a JSON representation of the tool call and its result.
+
+Now, when you ask about the weather, you'll see the tool invocation and its result displayed in your chat interface.
+
+Enabling Multi-Step Tool Calls
+You may have noticed that while the tool results are visible in the chat interface, the model isn't using this information to answer your original query. This is because once the model generates a tool call, it has technically completed its generation.
+
+To solve this, you can enable multi-step tool calls using the maxSteps option in your useChat hook. This feature will automatically send tool results back to the model to trigger an additional generation. In this case, you want the model to answer your question using the results from the weather tool.
+
+Update Your Client-Side Code
+Modify your app/page.tsx file to include the maxSteps option:
+
+app/page.tsx
+
+'use client';
+
+import { useChat } from '@ai-sdk/react';
+
+export default function Chat() {
+  const { messages, input, handleInputChange, handleSubmit } = useChat({
+    maxSteps: 5,
+  });
+
+  // ... rest of your component code
+}
+Head back to the browser and ask about the weather in a location. You should now see the model using the weather tool results to answer your question.
+
+By setting maxSteps to 5, you're allowing the model to use up to 5 "steps" for any given generation. This enables more complex interactions and allows the model to gather and process information over several steps if needed. You can see this in action by adding another tool to convert the temperature from Fahrenheit to Celsius.
+
+Update Your Route Handler
+Update your app/api/chat/route.ts file to add a new tool to convert the temperature from Fahrenheit to Celsius:
+
+app/api/chat/route.ts
+
+import { openai } from '@ai-sdk/openai';
+import { streamText, tool } from 'ai';
+import { z } from 'zod';
+
+export const maxDuration = 30;
+
+export async function POST(req: Request) {
+  const { messages } = await req.json();
+
+  const result = streamText({
+    model: openai('gpt-4o'),
+    messages,
+    tools: {
+      weather: tool({
+        description: 'Get the weather in a location (fahrenheit)',
+        parameters: z.object({
+          location: z.string().describe('The location to get the weather for'),
+        }),
+        execute: async ({ location }) => {
+          const temperature = Math.round(Math.random() * (90 - 32) + 32);
+          return {
+            location,
+            temperature,
+          };
+        },
+      }),
+      convertFahrenheitToCelsius: tool({
+        description: 'Convert a temperature in fahrenheit to celsius',
+        parameters: z.object({
+          temperature: z
+            .number()
+            .describe('The temperature in fahrenheit to convert'),
+        }),
+        execute: async ({ temperature }) => {
+          const celsius = Math.round((temperature - 32) * (5 / 9));
+          return {
+            celsius,
+          };
+        },
+      }),
+    },
+  });
+
+  return result.toDataStreamResponse();
+}
+Now, when you ask "What's the weather in New York in celsius?", you should see a more complete interaction:
+
+The model will call the weather tool for New York.
+You'll see the tool result displayed.
+It will then call the temperature conversion tool to convert the temperature from Fahrenheit to Celsius.
+The model will then use that information to provide a natural language response about the weather in New York.
+This multi-step approach allows the model to gather information and use it to provide more accurate and contextual responses, making your chatbot considerably more useful.
+
+This simple example demonstrates how tools can expand your model's capabilities. You can create more complex tools to integrate with real APIs, databases, or any other external systems, allowing the model to access and process real-world data in real-time. Tools bridge the gap between the model's knowledge cutoff and current information.
+
+Where to Next?
+You've built an AI chatbot using the AI SDK! From here, you have several paths to explore:
+
+To learn more about the AI SDK, read through the documentation.
+If you're interested in diving deeper with guides, check out the RAG (retrieval-augmented generation) and multi-modal chatbot guides.
+To jumpstart your first AI project, explore available templates.
+Previous
+Navigating the Library
+Next
+Next.js Pages Router
+On this page
+Next.js App Router Quickstart
+Prerequisites
+Create Your Application
+Install dependencies
+Configure OpenAI API key
+Create a Route Handler
+Wire up the UI
+Running Your Application
+Enhance Your Chatbot with Tools
+Update Your Route Handler
+Update the UI
+Enabling Multi-Step Tool Calls
+Update Your Client-Side Code
+Update Your Route Handler
+Where to Next?
+Elevate your AI applications with Vercel.
+Trusted by OpenAI, Replicate, Suno, Pinecone, and more.
+Vercel provides tools and infrastructure to deploy AI apps and features at scale.
+Resources
+Docs
+Cookbook
+Providers
+Showcase
+GitHub
+Discussions
+More
+Playground
+Contact Sales
+About Vercel
+Next.js + Vercel
+Open Source Software
+GitHub
+X
+Legal
+Privacy Policy
+© 2025 Vercel, Inc.
+
+
+Getting Started: Next.js App Router
+
+1. Always re-use the same query tanstack query client
+2. Make sure to follow the above documentation. I.e. using streamText({})

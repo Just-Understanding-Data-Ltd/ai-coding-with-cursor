@@ -21,6 +21,26 @@ beforeAll(() => {
     }
     originalError.call(console, ...args);
   };
+
+  // Set up manual mocks
+  vi.mock("next/navigation");
+  vi.mock("@/utils/supabase/client", () => ({
+    createClient: vi.fn(() => ({
+      from: vi.fn().mockReturnThis(),
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockReturnThis(),
+      insert: vi.fn().mockReturnThis(),
+      delete: vi.fn().mockReturnThis(),
+      match: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockReturnThis(),
+      data: null,
+      error: null,
+    })),
+  }));
+  vi.mock("@repo/supabase");
+  vi.mock("ai/react");
 });
 
 // Only mock browser APIs when in a browser environment

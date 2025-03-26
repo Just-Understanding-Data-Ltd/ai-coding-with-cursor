@@ -33,6 +33,7 @@ Core Philosophy
 - Handle all happy critical paths first.
 - Handle all edge cases.
 - Write CRUD tests for RLS (regardless of whether or not roles will be utilized)
+- You should always use factory functions to generate users, orgs etc. Avoid using existing scenarios and favour more verbose tests that are idempotent.
 
 There are a couple of scenarios so far:
 - Client/Team

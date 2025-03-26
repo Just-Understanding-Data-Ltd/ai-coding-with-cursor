@@ -1,0 +1,7 @@
+@index.ts @chat
+
+I want you to edit the homepage for our customer chat bot application. This allows users to book different types of meetings for a prdocut discovery with Cursor Industries.
+
+It is an advanced chat bot that utilizes Generative UI and Vercel AI SDK.
+
+Avoid editing auth, payment etc. But definitely change the FAQs, homepage section etc.

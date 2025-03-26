@@ -2,6 +2,7 @@ import { act } from "react";
 import { render } from "@testing-library/react";
 import ClientSideProviders from "@/components/providers/ClientSideProviders";
 import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { vi } from "vitest";
 import { mockRouter } from "./mocks";
 
@@ -14,6 +15,89 @@ vi.mock("react-hot-toast", () => ({
     loading: vi.fn(),
   },
 }));
+
+// Mock next-themes
+vi.mock("next-themes", () => ({
+  ThemeProvider: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  useTheme: () => ({
+    theme: "light",
+    setTheme: vi.fn(),
+    themes: ["light", "dark", "system"],
+  }),
+}));
+
+// Mock useSearchParams and usePathname for AnalyticsTracker
+vi.mock("next/navigation", async () => {
+  const actual = await vi.importActual("next/navigation");
+  return {
+    ...actual,
+    useRouter: () => mockRouter,
+    usePathname: () => "/",
+    useSearchParams: () => new URLSearchParams(),
+  };
+});
+
+// Mock Supabase hooks
+vi.mock("@repo/supabase", async () => {
+  const actual = await vi.importActual("@repo/supabase");
+  return {
+    ...actual,
+    useCreateChat: () => ({
+      mutate: vi.fn(),
+      isPending: false,
+    }),
+    useDeleteChat: () => ({
+      mutate: vi.fn(),
+      isPending: false,
+    }),
+    useUpdateChat: () => ({
+      mutate: vi.fn(),
+      isPending: false,
+    }),
+    useTeamMembers: () => ({
+      data: [],
+      isLoading: false,
+      error: null,
+    }),
+    useRoles: () => ({
+      data: [],
+      isLoading: false,
+      error: null,
+    }),
+    useInvitations: () => ({
+      data: [],
+      isLoading: false,
+      error: null,
+    }),
+    useUpdateTeam: () => ({
+      mutate: vi.fn(),
+      isPending: false,
+    }),
+    useDeleteTeam: () => ({
+      mutate: vi.fn(),
+      isPending: false,
+    }),
+    useTeams: () => ({
+      data: [],
+      isLoading: false,
+      error: null,
+    }),
+    useUpdateTeamMember: () => ({
+      mutate: vi.fn(),
+      isPending: false,
+    }),
+    useInviteMember: () => ({
+      mutate: vi.fn(),
+      isPending: false,
+    }),
+    useRevokeInvitation: () => ({
+      mutate: vi.fn(),
+      isPending: false,
+    }),
+  };
+});
 
 // Mock matchMedia
 Object.defineProperty(window, "matchMedia", {
@@ -31,9 +115,18 @@ Object.defineProperty(window, "matchMedia", {
 });
 
 function TestProviders({ children }: { children: React.ReactNode }) {
+  // Use new QueryClient for each test to avoid shared state
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  });
+
   return (
     <AppRouterContext.Provider value={mockRouter as any}>
-      <ClientSideProviders>{children}</ClientSideProviders>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     </AppRouterContext.Provider>
   );
 }

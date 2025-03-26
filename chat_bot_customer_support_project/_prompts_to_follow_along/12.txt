@@ -1,0 +1,9 @@
+@https://sdk.vercel.ai/docs/ai-sdk-core/tools-and-tool-calling#streamtext 
+@https://sdk.vercel.ai/docs/ai-sdk-ui/generative-user-interfaces 
+
+1. I want you to generate fake tools for alll of the following:
+Booking, Re-scheduling, Cancel, Viewing 
+
+2. Also I want you to generate custom tool UI components for this and to integrate these with our existing chat client @ChatClient.tsx 
+
+Can you use fake data and functions for now, we will add the database layer on afterwards?

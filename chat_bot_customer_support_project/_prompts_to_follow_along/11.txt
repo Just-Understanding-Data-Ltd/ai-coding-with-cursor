@@ -1,0 +1,4 @@
+Start a conversation
+Type a message below to start chatting with the AI.
+
+Change the text above the start of the chat session to let the user knows that they are talking with a customer chat bot and it can help them with booking and rescheduling and cancelling appointments as the text.

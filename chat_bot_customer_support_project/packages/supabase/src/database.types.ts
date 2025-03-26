@@ -34,6 +34,65 @@ export type Database = {
   }
   public: {
     Tables: {
+      appointments: {
+        Row: {
+          cancellation_reason: string | null
+          created_at: string
+          created_by: string | null
+          customer_email: string
+          customer_name: string
+          date: string
+          end_time: string
+          id: string
+          metadata: Json | null
+          service: string
+          status: string
+          team_id: string
+          time: string
+          updated_at: string
+        }
+        Insert: {
+          cancellation_reason?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_email: string
+          customer_name: string
+          date: string
+          end_time: string
+          id?: string
+          metadata?: Json | null
+          service: string
+          status: string
+          team_id: string
+          time: string
+          updated_at?: string
+        }
+        Update: {
+          cancellation_reason?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_email?: string
+          customer_name?: string
+          date?: string
+          end_time?: string
+          id?: string
+          metadata?: Json | null
+          service?: string
+          status?: string
+          team_id?: string
+          time?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       articles: {
         Row: {
           author_id: string
@@ -251,6 +310,7 @@ export type Database = {
           metadata: Json | null
           role: string
           tokens_used: number | null
+          tool_calls: Json | null
           updated_at: string
         }
         Insert: {
@@ -262,6 +322,7 @@ export type Database = {
           metadata?: Json | null
           role: string
           tokens_used?: number | null
+          tool_calls?: Json | null
           updated_at?: string
         }
         Update: {
@@ -273,6 +334,7 @@ export type Database = {
           metadata?: Json | null
           role?: string
           tokens_used?: number | null
+          tool_calls?: Json | null
           updated_at?: string
         }
         Relationships: [
@@ -606,6 +668,15 @@ export type Database = {
           p_referral_source?: Database["public"]["Enums"]["organization_referral_source"]
         }
         Returns: Json
+      }
+      get_available_time_slots: {
+        Args: {
+          p_date: string
+          p_team_id: string
+        }
+        Returns: {
+          time_slot: string
+        }[]
       }
       has_org_permission: {
         Args: {

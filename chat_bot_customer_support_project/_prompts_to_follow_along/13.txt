@@ -1,0 +1,3 @@
+1. When I do something like:
+- No appointments found it does generate the react component, however this component then dissapears and is replaced with the streamed text. We want to preserve both the response and also the streamed text.
+2. Currently in @route.ts @migrations we are not storing any tool call or tool result information in the messages. Should we be doing this and if so could you update the route handler and the SQL migrations file so that when we reload a chat conversation we can see previous tool call results?
