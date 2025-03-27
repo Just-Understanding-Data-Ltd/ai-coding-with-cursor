@@ -121,7 +121,7 @@ enable_manual_linking = false
 enable_signup = true
 # If enabled, a user will be required to confirm any email change on both the old, and new email
 # addresses. If disabled, only the new email is required to confirm.
-double_confirm_changes = true
+double_confirm_changes = false
 # If enabled, users need to confirm their email address before signing in.
 enable_confirmations = false
 # Controls the minimum amount of time that must pass before sending another signup confirmation or password reset email.
@@ -140,6 +140,8 @@ max_frequency = "1s"
 [auth.email.template.magic_link]
 subject = "Magic Link Login"
 content_path = "./supabase/templates/magic-link.html"
+
+
 
 [auth.sms]
 # Allow/disallow new user signups via SMS to your project.
